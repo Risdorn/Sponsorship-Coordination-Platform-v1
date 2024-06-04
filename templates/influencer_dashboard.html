@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Influencer Dashboard</title>
+    </head>
+    <body>
+        <h1>Welcome, Influencer!</h1>
+        <form method="POST">
+            <input type="hidden" name="form_id" value="search">
+            <button type="submit">Search for Campaigns</button>
+        </form>
+        {% if ad_requests | length == 0 %}
+            <p>No Ad Requesta recieved yet.</p>
+        {% endif %}
+        {% for ad_request in ad_requests %}
+            <p>{{ ad_request.messages }}</p>
+            <p>{{ ad_request.requirements }}</p>
+            <p>{{ ad_request.payment_amount }}</p>
+            {% if ad_request.sent_to_influencer %}
+                <p>{{ ad_request.status }}</p>
+                {% if ad_request.status == "pending" %}
+                    <form method="POST">
+                        <input type="hidden" name="form_id" value="ad_request">
+                        <input type="hidden" name="ad_request_id" value="{{ ad_request.id }}">
+                        <button type="submit" name="status" value="Accept">Accept</button>
+                        <button type="submit" name="status" value="Reject">Reject</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <a href="{{ url_for('home') }}" class="button">Logout</a>
+    </body>
+</html>

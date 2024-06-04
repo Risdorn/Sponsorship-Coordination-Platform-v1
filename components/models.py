@@ -12,15 +12,19 @@ class Sponsor(db.Model):
     __tablename__ = "sponsor"
     sponsor_id = db.Column(db.Integer, primary_key=True, unique = True, nullable=False)
     name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, nullable=False, unique = True)
+    password = db.Column(db.String, nullable=False)
     industry = db.Column(db.String, nullable=False)
-    budget = db.Column(db.String, nullable=False)
+    #budget = db.Column(db.String, nullable=False)
 
 # Influencer class, A social media influencer who has a large following
 # Can recieve multiple Ad_requests
 class Influencer(db.Model):
     __tablename__ = "influencer"
     influencer_id = db.Column(db.Integer, primary_key=True, unique = True, nullable=False)
-    name = db.Column(db.String, nullable=False, unique = True)
+    name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, nullable=False, unique = True)
+    password = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
     niche = db.Column(db.String, nullable=False)
     reach = db.Column(db.Float, nullable=False)
@@ -35,6 +39,7 @@ class Ad_request(db.Model):
     messages = db.Column(db.String, nullable=False)
     requirements = db.Column(db.String, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
+    sent_to_influencer = db.Column(db.Boolean, nullable=False)
     status = db.Column(db.String, nullable=False)
 
 # Campaign class, A marketing campaign created by a sponsor to promote their product

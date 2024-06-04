@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Search</title>
+        <script>
+            function showForm() {
+                if (document.getElementById('Ad_Form').style.display == "none") {
+                    document.getElementById('Ad_Form').style.display = "block";
+                } else {
+                    document.getElementById('Ad_Form').style.display = "none";
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Search</h1>
+        <form method="POST">
+            <input type="text" name="query" placeholder="Search">
+            Sort by: <select name="sort">
+                <option value="none">None</option>
+                {% if type == "influencer" %}
+                    <option value="reach">Reach</option>
+                    <option value="category">Category</option>
+                {% elif type == "campaign" %}
+                    <option value="budget">Budget</option>
+                {% endif %}
+            <button type="submit">Search</button>
+        </form>
+        <ul>
+            {% if type == "influencer" %}
+                {% for influencer in influencers %}
+                    <li>{{ influencer }}
+                        <button onclick="showForm()">Send Ad Request</button>
+                        <form id="Ad_Form" method="POST" style="display: none;">
+                            <input type="hidden" name="form_id" value="ad_request">
+                            <input type="hidden" name="influencer_id" value="{{ influencer.id }}">
+                            
+                            <input type="text" name="message" placeholder="Message">
+                            <input type="text" name="requirements" placeholder="Requirements">
+                            <input type="number" name="payment_amount" placeholder="Payment Amount">
+                            <button type="submit">Send</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            {% elif type == "campaign" %}
+                {% for campaign in campaigns %}
+                    <li>{{ campaign }}</li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Sponsor Dashboard</title>
+        <script>
+            function showForm() {
+                if (document.getElementById('Campaign_Form').style.display == "none") {
+                    document.getElementById('Campaign_Form').style.display = "block";
+                } else {
+                    document.getElementById('Campaign_Form').style.display = "none";
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Published Campaigns</h1>
+        <button onclick="showForm()">Create Campaign</button>
+        <form method="POST">
+            <input type="hidden" name="form_id" value="search">
+            <button type="submit">Search for Influencers</button>
+        </form>
+        <div id="Campaign_Form" style="display: none;">
+            <form method="POST">
+                <input type="hidden" name="form_id" value="campaign">
+                Goals: <input type="text" name="goals"><br>
+                Start Date: <input type="date" name="start_date"><br>
+                End Date: <input type="date" name="end_date"><br>
+                Visibility: <input type="radio" id="public" name="visibility" value="public" checked>
+                <label for="public">Public</label>
+                <input type="radio" id="private" name="visibility" value="private">
+                <label for="private">Private</label><br>
+                Budget: <input type="number" name="budget"><br>
+                <button type="submit">Create</button>
+            </form>
+        </div>
+        {% if campaigns | length == 0 %}
+            <p>No campaigns published yet.</p>
+        {% endif %}
+        {% for campaign in campaigns %}
+            <p>{{ campaign.goals }}</p>
+            <p>{{ campaign.visibility }}</p>
+            <p>{{ campaign.budget }}</p>
+        {% endfor %}
+        <a href="{{ url_for('home') }}" class="button">Logout</a>
+    </body>
+</html>

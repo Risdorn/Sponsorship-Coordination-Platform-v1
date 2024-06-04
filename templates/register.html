@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Register</title>
+        <script>
+            function showForm() {
+                var userType = document.querySelector('input[name="type"]:checked').value;
+                if (userType == 'Influencer') {
+                    document.getElementById('Influencer_Form').style.display = 'block';
+                    document.getElementById('Sponsor_Form').style.display = 'none';
+                } else if (userType == 'Sponsor') {
+                    document.getElementById('Influencer_Form').style.display = 'none';
+                    document.getElementById('Sponsor_Form').style.display = 'block';
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Register</h1>
+        <form method="POST">
+            Name: <input type="text" name="name"><br>
+            Email: <input type="email" name="email"><br>
+            Password: <input type="password" name="password"><br>
+            Confirm Password: <input type="password" name="confirm_password"><br>
+            Are you a <input type="radio" id="sponsor" name="type" value="Sponsor" checked onclick="showForm()">
+            <label for="sponsor">Sponsor</label>
+            <input type="radio" id="Influencer" name="type" value="Influencer" onclick="showForm()">
+            <label for="influencer">Influencer</label><br>
+
+            <div id="Influencer_Form" style="display: none;">
+                Category: <input type="text" name="category"><br>
+                Niche: <input type="text" name="niche"><br>
+                Reach: <input type="number" name="reach"><br>
+            </div>
+
+            <div id="Sponsor_Form" style="display: block;">
+                Industry: <input type="text" name="industry"><br>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+    </body>
+</html>
