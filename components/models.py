@@ -15,6 +15,8 @@ class Sponsor(db.Model):
     email = db.Column(db.String, nullable=False, unique = True)
     password = db.Column(db.String, nullable=False)
     industry = db.Column(db.String, nullable=False)
+    flagged = db.Column(db.Boolean, nullable=False, default=False)
+    reason = db.Column(db.String, nullable=True, default=None)
     #budget = db.Column(db.String, nullable=False)
 
 # Influencer class, A social media influencer who has a large following
@@ -28,6 +30,8 @@ class Influencer(db.Model):
     category = db.Column(db.String, nullable=False)
     niche = db.Column(db.String, nullable=False)
     reach = db.Column(db.Float, nullable=False)
+    flagged = db.Column(db.Boolean, nullable=False, default=False)
+    reason = db.Column(db.String, nullable=True, default=None)
 
 # Ad_request class, A request from a sponsor to an influencer to advertise their product
 class Ad_request(db.Model):
@@ -41,6 +45,8 @@ class Ad_request(db.Model):
     payment_amount = db.Column(db.Float, nullable=False)
     sent_to_influencer = db.Column(db.Boolean, nullable=False)
     status = db.Column(db.String, nullable=False)
+    flagged = db.Column(db.Boolean, nullable=False, default=False)
+    reason = db.Column(db.String, nullable=True, default=None)
 
 # Campaign class, A marketing campaign created by a sponsor to promote their product
 # Can contain multiple Ad_requests
@@ -49,11 +55,14 @@ class Campaign(db.Model):
     campaign_id = db.Column(db.Integer, primary_key=True, unique = True, nullable=False)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), nullable=False)
     #influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False)
+    name = db.Column(db.String, nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     budget = db.Column(db.Float, nullable=False)
     visibility = db.Column(db.String, nullable=False)
     goals = db.Column(db.String, nullable=False)
+    flagged = db.Column(db.Boolean, nullable=False, default=False)
+    reason = db.Column(db.String, nullable=True, default=None)
 
 
 """ # Put this in app.py to create dummy data 

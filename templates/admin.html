@@ -2,9 +2,145 @@
 <html>
     <head>
         <title>Adminstrator Dashboard</title>
+        <script src="\static\script.js"></script>
     </head>
     <body>
-        <h1>Welcome, Admin!</h1>
+        <button onclick="showForm('Home'); hideForm('Influencers'); hideForm('Sponsors'); hideForm('Campaigns'); hideForm('Ad_Requests')">Home</button>
+        <button onclick="hideForm('Home'); showForm('Influencers'); hideForm('Sponsors'); hideForm('Campaigns'); hideForm('Ad_Requests')">Inluencers</button>
+        <button onclick="hideForm('Home'); hideForm('Influencers'); showForm('Sponsors'); hideForm('Campaigns'); hideForm('Ad_Requests')">Sponsors</button>
+        <button onclick="hideForm('Home'); hideForm('Influencers'); hideForm('Sponsors'); showForm('Campaigns'); hideForm('Ad_Requests')">Campaigns</button>
+        <button onclick="hideForm('Home'); hideForm('Influencers'); hideForm('Sponsors'); hideForm('Campaigns'); showForm('Ad_Requests')">Ad Requests</button>
         <a href="{{ url_for('home') }}" class="button">Logout</a>
+        <div id="Home" style="display: block;">
+            <h1>Welcome, Admin</h1>
+        </div>
+        <div id="Influencers" style="display: none;">
+            <h1>Influencers</h1>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Niche</th>
+                    <th>Reach</th>
+                    <th>Email</th>
+                    <th>Flagged</th>
+                </tr>
+                {% for influencer in influencers %}
+                    <tr>
+                        <td>{{ influencer.name }}</td>
+                        <td>{{ influencer.category }}</td>
+                        <td>{{ influencer.niche }}</td>
+                        <td>{{ influencer.reach }}</td>
+                        <td>{{ influencer.email }}</td>
+                        {% if influencer.flagged %}
+                            <td>Flagged</td>
+                        {% else %}
+                        <td>
+                            <button onclick="Form_toggle('Flag_Form'); id_toggle3('flag_form',{{ influencer.influencer_id }},'influencer')">Flag</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div id="Sponsors" style="display: none;">
+            <h1>Sponsors</h1>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Industry</th>
+                    <th>Email</th>
+                    <th>Flagged</th>
+                </tr>
+                {% for sponsor in sponsors %}
+                    <tr>
+                        <td>{{ sponsor.name }}</td>
+                        <td>{{ sponsor.industry }}</td>
+                        <td>{{ sponsor.email }}</td>
+                        {% if sponsor.flagged %}
+                            <td>Flagged</td>
+                        {% else %}
+                        <td>
+                            <button onclick="Form_toggle('Flag_Form'); id_toggle3('flag_form',{{ sponsor.sponsor_id }},'sponsor')">Flag</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div id="Campaigns" style="display: none;">
+            <h1>Campaigns</h1>
+            <table>
+                <tr>
+                    <th>Sponsor</th>
+                    <th>Name</th>
+                    <th>Goals</th>
+                    <th>Visibility</th>
+                    <th>Budget</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Flagged</th>
+                </tr>
+                {% for campaign in campaigns %}
+                    <tr>
+                        <td>{{ campaign.sponsor_name }}</td>
+                        <td>{{ campaign.name }}</td>
+                        <td>{{ campaign.goals }}</td>
+                        <td>{{ campaign.visibility }}</td>
+                        <td>{{ campaign.budget }}</td>
+                        <td>{{ campaign.start_date }}</td>
+                        <td>{{ campaign.end_date }}</td>
+                        {% if campaign.flagged %}
+                            <td>Flagged</td>
+                        {% else %}
+                        <td>
+                            <button onclick="Form_toggle('Flag_Form'); id_toggle3('flag_form',{{ campaign.campaign_id }},'campaign')">Flag</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div id="Ad_Requests" style="display: none;">
+            <h1>Ad Requests</h1>
+            <table>
+                <tr>
+                    <th>Influencer</th>
+                    <th>Sponsor</th>
+                    <th>Campaign</th>
+                    <th>Message</th>
+                    <th>Requirements</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Flagged</th>
+                </tr>
+                {% for ad_request in ad_requests %}
+                    <tr>
+                        <td>{{ ad_request.influencer_name }}</td>
+                        <td>{{ ad_request.sponsor_name }}</td>
+                        <td>{{ ad_request.campaign }}</td>
+                        <td>{{ ad_request.messages }}</td>
+                        <td>{{ ad_request.requirements }}</td>
+                        <td>{{ ad_request.payment_amount }}</td>
+                        <td>{{ ad_request.status }}</td>
+                        {% if ad_request.flagged %}
+                            <td>Flagged</td>
+                        {% else %}
+                        <td>
+                            <button onclick="Form_toggle('Flag_Form'); id_toggle3('flag_form',{{ ad_request.ad_request_id }}, 'ad_request')">Flag</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div id="Flag_Form" style="display:none;">
+            <form method="POST" id="flag_form">
+                <input type="hidden" name="form_id">
+                <input type="hidden" name="id">
+                <input type="text" name="reason" placeholder="Reason">
+                <button type="submit">Submit</button>
+            </form>
+        </div>
     </body>
 </html>

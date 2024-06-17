@@ -2,32 +2,66 @@
 <html>
     <head>
         <title>Influencer Dashboard</title>
+        <script src="\static\script.js"></script>
     </head>
     <body>
-        <h1>Welcome, Influencer!</h1>
+        <button onclick="showForm('Profile'); hideForm('ad_request_tab')">Profile</button>
+        <button onclick="hideForm('Profile'); showForm('ad_request_tab')">Ad Requests</button>
         <form method="POST">
             <input type="hidden" name="form_id" value="search">
             <button type="submit">Search for Campaigns</button>
         </form>
-        {% if ad_requests | length == 0 %}
-            <p>No Ad Requesta recieved yet.</p>
-        {% endif %}
-        {% for ad_request in ad_requests %}
-            <p>{{ ad_request.messages }}</p>
-            <p>{{ ad_request.requirements }}</p>
-            <p>{{ ad_request.payment_amount }}</p>
-            {% if ad_request.sent_to_influencer %}
-                <p>{{ ad_request.status }}</p>
-                {% if ad_request.status == "pending" %}
-                    <form method="POST">
-                        <input type="hidden" name="form_id" value="ad_request">
-                        <input type="hidden" name="ad_request_id" value="{{ ad_request.id }}">
-                        <button type="submit" name="status" value="Accept">Accept</button>
-                        <button type="submit" name="status" value="Reject">Reject</button>
-                    </form>
-                {% endif %}
-            {% endif %}
-        {% endfor %}
         <a href="{{ url_for('home') }}" class="button">Logout</a>
+        <div id="Profile" style="display: block;">
+            <h1>Welcome, {{ influencer.name }}</h1>
+            <p>Category: {{ influencer.category }}</p>
+            <p>Niche: {{ influencer.niche }}</p>
+            <p>Reach: {{ influencer.reach }}</p>
+            <p>Email: {{ influencer.email }}</p>
+            <button onclick="Form_toggle('EditProfile')">Edit Details</button>
+            <div id="EditProfile" style="display: none;">
+                <form method="POST">
+                    <input type="hidden" name="form_id" value="edit_profile">
+                    Name: <input type="text" name="name" value="{{ influencer.name }}"><br>
+                    Category: <input type="text" name="category" value="{{ influencer.category }}"><br>
+                    Niche: <input type="text" name="niche" value="{{ influencer.niche }}"><br>
+                    Reach: <input type="number" name="reach" value="{{ influencer.reach }}"><br>
+                    <button type="submit">Submit</button>
+                </form>
+                <button onclick="hideForm('EditProfile')">Cancel</button>
+            </div>
+        </div>
+        <div id="ad_request_tab" style="display: none;">
+            {% if ad_requests | length == 0 %}
+                <p>No Ad Requesta recieved yet.</p>
+            {% endif %}
+            {% for ad_request in ad_requests %}
+                <p>{{ ad_request.messages }}</p>
+                <p>{{ ad_request.requirements }}</p>
+                <p>{{ ad_request.payment_amount }}</p>
+                {% if ad_request.sent_to_influencer %}
+                    <p>{{ ad_request.status }}</p>
+                    {% if ad_request.status == "Pending" %}
+                        <form method="POST">
+                            <input type="hidden" name="form_id" value="ad_request">
+                            <input type="hidden" name="ad_request_id" value="{{ ad_request.ad_request_id }}">
+                            <button type="submit" name="status" value="Accept">Accept</button>
+                            <button type="submit" name="status" value="Reject">Reject</button>
+                        </form>
+                        <button onclick="Form_toggle('negotiate')">Negotiate</button>
+                        <div id="negotiate" style="display: none;">
+                            <form method="POST">
+                                <input type="hidden" name="form_id" value="negotiate">
+                                <input type="hidden" name="ad_request_id" value="{{ ad_request.ad_request_id }}">
+                                Messages: <input type="text" name="messages" value="{{ ad_request.messages }}">
+                                Requirements: <input type="text" name="requirements" value="{{ ad_request.requirements }}">
+                                Payment: <input type="number" name="payment_amount" value="{{ ad_request.payment_amount }}">
+                                <button type="submit">Send</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
     </body>
 </html>

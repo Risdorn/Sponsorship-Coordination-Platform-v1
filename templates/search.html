@@ -2,51 +2,54 @@
 <html>
     <head>
         <title>Search</title>
-        <script>
-            function showForm() {
-                if (document.getElementById('Ad_Form').style.display == "none") {
-                    document.getElementById('Ad_Form').style.display = "block";
-                } else {
-                    document.getElementById('Ad_Form').style.display = "none";
-                }
-            }
-        </script>
+        <script src="\static\script.js"></script>
     </head>
     <body>
         <h1>Search</h1>
-        <form method="POST">
+        <form method="POST" id="Search_Form">
+            <input type="hidden" name="form_id" value="search">
             <input type="text" name="query" placeholder="Search">
             Sort by: <select name="sort">
-                <option value="none">None</option>
+                    <option value="none">None</option>
                 {% if type == "influencer" %}
                     <option value="reach">Reach</option>
                     <option value="category">Category</option>
                 {% elif type == "campaign" %}
                     <option value="budget">Budget</option>
                 {% endif %}
-            <button type="submit">Search</button>
-        </form>
+                </select>
+                <button type="submit">Search</button>
+            </form>
         <ul>
             {% if type == "influencer" %}
                 {% for influencer in influencers %}
-                    <li>{{ influencer }}
-                        <button onclick="showForm()">Send Ad Request</button>
-                        <form id="Ad_Form" method="POST" style="display: none;">
-                            <input type="hidden" name="form_id" value="ad_request">
-                            <input type="hidden" name="influencer_id" value="{{ influencer.id }}">
-                            
-                            <input type="text" name="message" placeholder="Message">
-                            <input type="text" name="requirements" placeholder="Requirements">
-                            <input type="number" name="payment_amount" placeholder="Payment Amount">
-                            <button type="submit">Send</button>
-                        </form>
+                    <li>{{ influencer.name }}, {{ influencer.category }}, {{ influencer.reach }}, {{ influencer.email }}
+                        <button onclick="Form_toggle('Ad_Form'); id_toggle('Ad_Form','influencer','{{ influencer.influencer_id }}')">Send Ad Request</button>
                     </li>
                 {% endfor %}
             {% elif type == "campaign" %}
                 {% for campaign in campaigns %}
-                    <li>{{ campaign }}</li>
+                    <li>{{ campaign.name }} {{ campaign.start_date }}, {{ campaign.end_date }}, {{ campaign.budget }}, {{ campaign.goals }}</li>
+                    <button onclick="Form_toggle('Ad_Form'); id_toggle('Ad_Form','campaign','{{ campaign.campaign_id }}')">Send Ad Request</button>
                 {% endfor %}
             {% endif %}
         </ul>
+        <form id="Ad_Form" method="POST" style="display: none;">
+            <input type="hidden" name="form_id" value="ad_request">
+            <input type="hidden" name="influencer_id" value={{ id }}>
+            {% if type == "influencer" %}
+                Campaign: <select name="campaign_id">
+                    {% for campaign in campaigns %}
+                        <option value="{{ campaign.campaign_id }}">{{ campaign.goals }}</option>
+                    {% endfor %}
+                </select>
+            {% elif type == "campaign" %}
+                <input type="hidden" name="campaign_id">
+            {% endif %}
+            Message: <input type="text" name="message" placeholder="Message">
+            Requirements: <input type="text" name="requirements" placeholder="Requirements">
+            Payment: <input type="number" name="payment_amount" placeholder="Payment Amount">
+            <button type="submit">Send</button>
+        </form>
     </body>
 </html>
