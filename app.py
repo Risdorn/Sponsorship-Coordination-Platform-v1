@@ -1,8 +1,9 @@
 # This is the main file for the Sponsorship Coordination Platform. It is a Flask application that serves the back-end
 
 from flask import Flask, render_template, request, redirect, url_for
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
-from components.models import db, Sponsor, Influencer, Ad_request, Campaign
+from components.models import db, User, Ad_request, Campaign
 
 import os
 from datetime import datetime
@@ -12,7 +13,16 @@ app = Flask(__name__)
 
 # Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SECRET_KEY'] = 'secret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance/sponsorship_platform.db')
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = User.query.get(user_id)
+    return user
 
 # Initialize the database
 db.init_app(app)
@@ -21,6 +31,10 @@ db.init_app(app)
 with app.app_context():
     # If the database does not exist, create it
     db.create_all()
+
+from components.sponsor_logic import *
+from components.influencer_logic import *
+from components.general_logic import *
 
 # Home page, Gives a breif description of the platform and provides login and register options
 @app.route('/', methods=['GET'])
@@ -48,10 +62,11 @@ def admin_login():
 def admin():
     if request.method == 'GET':
         # Get the admin dashboard
-        sponsors = Sponsor.query.all()
-        influencers = Influencer.query.all()
-        ad_requests = Ad_request.query.all()
-        campaigns = Campaign.query.all()
+        sponsors = all_sponsors()
+        influencers = all_influencers()
+        ad_requests = all_ad_requests()
+        campaigns = all_campaigns()
+        '''
         for campaign in campaigns:
             sponsor = Sponsor.query.filter_by(sponsor_id=campaign.sponsor_id).first()
             campaign.sponsor_name = sponsor.name
@@ -90,7 +105,7 @@ def admin():
         campaign.flagged = True
         campaign.reason = request.form['reason']
         db.session.commit()
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin'))'''
 
 # Login page, Allows users to login to the platform
 @app.route('/login', methods=['GET', 'POST'])
@@ -101,63 +116,70 @@ def login():
     elif request.method == 'POST':
         # Get the login credentials and check if they are correct
         email = request.form['email']
-        password = request.form['password']
-        sponsor = Sponsor.query.filter_by(email=email).first()
-        influencer = Influencer.query.filter_by(email=email).first()
+        password = request.form['pass']
+        user = login_user_man(email, password)
+        if user is None:
+            return render_template('login.html', error='Email or Password is incorrect, please try again')
         # If the user is a sponsor, redirect to the sponsor dashboard
         # If the user is an influencer, redirect to the influencer dashboard
-        if sponsor and sponsor.password == password:
-            return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor.sponsor_id))
-        elif influencer and influencer.password == password:
-            return redirect(url_for('influencer_dashboard', influencer_id=influencer.influencer_id))
-        
-        return render_template('login.html', error='Email or Password is incorrect, please try again')
+        login_user(user)
+        if user.role == 'Sponsor':
+            return redirect(url_for('sponsor_dashboard'))
+        elif user.role == 'Influencer':
+            return redirect(url_for('influencer_dashboard'))
 
 # Register page, Allows users to register to the platform
 @app.route('/register', methods=['GET', 'POST'])
-def register():
+@app.route('/register/sponsor', methods=['GET', 'POST'])
+def register_sponsor():
     if request.method == 'GET':
         # Get the register page
-        return render_template('register.html')
+        return render_template('register_sponsor.html')
     elif request.method == 'POST':
         # Get the registration details and create a new user
         email = request.form['email']
-        password = request.form['password']
+        password = request.form['pass']
+        confirm = request.form['con_pass']
         name = request.form['name']
-        type = request.form['type']
-        #print(type)
-        if type == 'Sponsor':
-            industry = request.form['industry']
-            sponsor = Sponsor(email=email, password=password, name=name, industry=industry)
-            db.session.add(sponsor)
-            db.session.commit()
-            return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor.sponsor_id))
-        elif type == 'Influencer':
-            category = request.form['category']
-            niche = request.form['niche']
-            reach = request.form['reach']
-            influencer = Influencer(email=email, password=password, name=name, category=category, niche=niche, reach=reach)
-            db.session.add(influencer)
-            db.session.commit()
-            return redirect(url_for('influencer_dashboard', influencer_id=influencer.influencer_id))
+        industry = request.form['industry']
+        sponsor = sponsor_register(name, email, password, industry)
+        login_user(sponsor)
+        return redirect(url_for('sponsor_dashboard'))
+        
+# Register page, Allows users to register to the platform
+@app.route('/register/influencer', methods=['GET', 'POST'])
+def register_influencer():
+    if request.method == 'GET':
+        # Get the register page
+        return render_template('register_influencer.html')
+    elif request.method == 'POST':
+        # Get the registration details and create a new user
+        email = request.form['email']
+        password = request.form['pass']
+        name = request.form['name']
+        category = request.form['category']
+        reach = request.form['reach']
+        influencer = influencer_register(name, email, password, category, reach)
+        login_user(influencer)
+        return redirect(url_for('influencer_dashboard'))
 
 # Sponsor dashboard, Allows sponsors to view their campaigns and create new campaigns
-@app.route('/sponsor/<int:sponsor_id>', methods=['GET', 'POST'])
-def sponsor_dashboard(sponsor_id):
-    sponsor = Sponsor.query.filter_by(sponsor_id=sponsor_id).first()
+@app.route('/sponsor/', methods=['GET', 'POST'])
+@login_required
+def sponsor_dashboard():
+    sponsor = current_user
+    sponsor_email = sponsor.email
+    print(sponsor_email)
     if request.method == 'GET':
         # Get the sponsor dashboard
-        campaigns = Campaign.query.filter_by(sponsor_id=sponsor_id).all()
-        ad_request_ids = [campaign.campaign_id for campaign in campaigns]
-        ad_requests = Ad_request.query.filter(Ad_request.campaign_id.in_(ad_request_ids)).all()
+        campaigns = get_campaigns(sponsor_email)
+        ad_requests = get_ad_requests_campaign(sponsor_email)
         return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests)
     elif request.method == 'POST' and request.form['form_id'] == 'edit_profile':
-        sponsor = Sponsor.query.filter_by(sponsor_id=sponsor_id).first()
-        sponsor.name = request.form['name']
-        sponsor.industry = request.form['industry']
-        db.session.commit()
-        return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'campaign':
+        # Update the sponsor profile
+        update_sponsor(request.form['name'], sponsor_email, request.form['password'], request.form['industry'])
+        return redirect(url_for('sponsor_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'add_campaign':
         # Create a new campaign
         start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
         end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
@@ -165,121 +187,93 @@ def sponsor_dashboard(sponsor_id):
         visibility = request.form['visibility']
         goals = request.form['goals']
         name = request.form['name']
-        campaign = Campaign(name=name, start_date=start_date, end_date=end_date, visibility=visibility, goals=goals, budget=budget, sponsor_id=sponsor_id)
-        db.session.add(campaign)
-        db.session.commit()
-        return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'ad_request':
-        ad_request_id = request.form['ad_request_id']
-        status = request.form["status"]
-        ad_request = Ad_request.query.filter_by(ad_request_id = ad_request_id).first()
-        ad_request.status = status + "ed"
-        ad_request.sent_to_influencer = True
-        db.session.commit()
-        return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'edit':
+        description = request.form['description']
+        create_campaign(sponsor_email, name, description, start_date, end_date, budget, visibility, goals)
+        return redirect(url_for('sponsor_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'edit_campaign':
         # Edit a campaign
-        campaign_id = request.form['campaign_id']
-        campaign = Campaign.query.filter_by(campaign_id=campaign_id).first()
-        campaign.start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
-        campaign.end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
-        campaign.budget = request.form['budget']
-        campaign.visibility = request.form['visibility']
-        campaign.goals = request.form['goals']
-        campaign.name = request.form['name']
-        db.session.commit()
-        return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'delete':
+        campaign_id = request.form['id']
+        start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
+        end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
+        update_campaign(campaign_id, request.form['name'], request.form['description'], start_date, end_date, request.form['budget'],
+                        request.form['visibility'], request.form['goals'])
+        return redirect(url_for('sponsor_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'delete_campaign':
         # Delete a campaign
-        campaign_id = request.form['campaign_id']
-        campaign = Campaign.query.filter_by(campaign_id=campaign_id).first()
-        db.session.delete(campaign)
-        db.session.commit()
-        return redirect(url_for('sponsor_dashboard', sponsor_id=sponsor_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'search':
-        # Searching for Influencers
-        return redirect(url_for('search', type='influencer', id=sponsor_id))
+        delete_campaign(request.form['id'])
+        return redirect(url_for('sponsor_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'revert_ad':
+        update_ad_request(request.form['id'], request.form['status'])
+        return redirect(url_for('sponsor_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'withdraw_ad':
+        delete_ad_request(request.form['id'])
+        return redirect(url_for('sponsor_dashboard'))
+        
 
 # Influencer dashboard, Allows influencers to view their ad requests and create new ad requests
-@app.route('/influencer/<int:influencer_id>', methods=['GET', 'POST'])
-def influencer_dashboard(influencer_id):
-    influencer = Influencer.query.filter_by(influencer_id=influencer_id).first()
+@app.route('/influencer/', methods=['GET', 'POST'])
+@login_required
+def influencer_dashboard():
+    influencer = current_user
+    influencer_email = influencer.email
+    print(influencer_email)
     if request.method == 'GET':
         # Get the influencer dashboard
-        ad_requests = Ad_request.query.filter_by(influencer_id=influencer_id).all()
+        ad_requests = get_ad_requests_influencer(influencer_email)
         return render_template('influencer_dashboard.html', influencer=influencer, ad_requests=ad_requests)
     elif request.method == 'POST' and request.form['form_id'] == 'edit_profile':
-        influencer = Influencer.query.filter_by(influencer_id=influencer_id).first()
-        influencer.name = request.form['name']
-        influencer.category = request.form['category']
-        influencer.niche = request.form['niche']
-        influencer.reach = request.form['reach']
-        db.session.commit()
-        return redirect(url_for('influencer_dashboard', influencer_id=influencer_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'ad_request':
-        # Accept or Reject an ad request
-        ad_request_id = request.form['ad_request_id']
-        status = request.form["status"] + "ed"
-        ad_request = Ad_request.query.filter_by(ad_request_id = ad_request_id).first()
-        ad_request.status = status
-        db.session.commit()
-        return redirect(url_for('influencer_dashboard', influencer_id=influencer_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'negotiate':
-        ad_request_id = request.form['ad_request_id']
-        ad_request = Ad_request.query.filter_by(ad_request_id = ad_request_id).first()
-        ad_request.payment_amount = request.form['payment_amount']
-        ad_request.messages = request.form['messages']
-        ad_request.requirements = request.form['requirements']
-        ad_request.status = "Pending"
-        ad_request.sent_to_influencer = False
-        db.session.commit()
-        return redirect(url_for('influencer_dashboard', influencer_id=influencer_id))
-    elif request.method == 'POST' and request.form['form_id'] == 'search':
-        # Searching for Campaigns
-        return redirect(url_for('search', type='campaign', id=influencer_id))
+        # Update the influencer profile
+        update_influencer(request.form['name'], influencer_email, request.form['password'], request.form['category'], request.form['reach'])
+        return redirect(url_for('influencer_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'revert_ad':
+        update_ad_request(request.form['id'], request.form['status'])
+        return redirect(url_for('influencer_dashboard'))
+    elif request.method == 'POST' and request.form['form_id'] == 'negotiate_ad':
+        negotiate_ad_request(request.form['id'], request.form['payment_amount'])
+        return redirect(url_for('influencer_dashboard'))
 
 # Search page, Allows users to search for influencers and sponsors
-@app.route('/search/<string:type>/<int:id>', methods=['GET', 'POST'])
-def search(type, id):
-    if request.method == 'GET':
-        # Get the search page
-        if type == 'influencer':
-            influencers = Influencer.query.all()
-            campaigns = Campaign.query.filter_by(sponsor_id=id).all()
-        elif type == 'campaign':
-            influencers = []
-            campaigns = Campaign.query.filter_by(visibility="public").all()
-        return render_template('search.html', type = type, id=id, influencers=influencers, campaigns=campaigns)
-    elif request.method == 'POST' and request.form['form_id'] == 'search':
-        # Get the search query and return the search results
-        query = request.form['query']
-        sort = request.form['sort']
-        if type == 'influencer':
-            influencers = Influencer.query.all()
-            campaigns = Campaign.query.filter_by(sponsor_id=id).all()
-        elif type == 'campaign':
-            influencers = None
-            campaigns = Campaign.query.filter_by(visibility="public").all()
-        
-        if sort == 'reach':
-            influencers = Influencer.query.filter(Influencer.name.like('%' + query + '%')).order_by(Influencer.reach.desc()).all()
-        elif sort == 'category':
-            influencers = Influencer.query.filter(Influencer.name.like('%' + query + '%')).order_by(Influencer.category).all()
-        elif sort == 'budget':
-            campaigns = Campaign.query.filter(Campaign.name.like('%' + query + '%')).filter_by(visibility="public").order_by(Campaign.budget.desc()).all()
-        return render_template('search.html', type=type, id=id, influencers=influencers, campaigns = campaigns)
-    
+@app.route('/search/', methods=['GET', 'POST'])
+@login_required
+def search():
+    user = current_user
+    influencer = get_influencer(user.email)
+    if influencer.role != 'Influencer':
+        influencer = None
+    if request.method == 'GET' and influencer:
+        type = "campaigns"
+        campaigns = get_public_campaigns()
+        return render_template('search.html', type=type, results=campaigns, campaign=[], id=influencer.id)
+    elif request.method == 'GET' and not influencer:
+        type = "influencers"
+        influencers = all_influencers()
+        campaign = get_campaigns(user.email)
+        return render_template('search.html', type=type, results=influencers, campaign=campaign, id=None)
+    elif request.method == 'POST' and request.form['form_id'] == 'search_name':
+        name = request.form['search']
+        type = request.form['type']
+        if type == 'influencers':
+            results = User.query.filter(User.name.like('%' + name + '%')).filter_by(role="Influencer").all()
+            campaign = get_campaigns(user.email)
+        elif type == 'campaigns':
+            results = Campaign.query.filter(Campaign.name.like('%' + name + '%')).all()
+            influencer = influencer.id
+        return render_template('search.html', type=type, results=results, campaign=campaign, id=influencer)
     elif request.method == 'POST' and request.form['form_id'] == 'ad_request':
         # Create a new ad request
-        influencer_id = request.form.get('influencer_id')
+        influencer_id = request.form.get('id')
         campaign_id = request.form['campaign_id']
         messages = request.form['message']
-        requirements = request.form['requirements']
+        requirements = request.form['requirement']
         payment_amount = request.form['payment_amount']
-        ad_request = Ad_request(influencer_id=influencer_id, campaign_id=campaign_id, messages=messages, requirements=requirements, payment_amount=payment_amount, sent_to_influencer=True, status='Pending')
-        db.session.add(ad_request)
-        db.session.commit()
-        return redirect(url_for('search', id=id, type=type))
+        create_ad_request(influencer_id, campaign_id, messages, requirements, payment_amount, 'Pending', False)
+        return redirect(url_for('search'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)

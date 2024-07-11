@@ -3,115 +3,353 @@
     <head>
         <title>Sponsor Dashboard</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <script src="\static\script.js"></script>
     </head>
     <body>
-        <button onclick="showForm('Profile'); hideForm('Current_Campaigns'); hideForm('Ad_Request'); hideForm('Campaign_Form')">Profile Page</button>
-        <button onclick="hideForm('Profile'); showForm('Current_Campaigns'); hideForm('Ad_Request'); hideForm('Campaign_Form')">Published Campaign</button>
-        <button onclick="hideForm('Profile'); hideForm('Current_Campaigns'); showForm('Ad_Request'); hideForm('Campaign_Form')">Ad Requests</button>
-        <button onclick="hideForm('Profile'); hideForm('Current_Campaigns'); hideForm('Ad_Request'); showForm('Campaign_Form')">Create Campaign</button>
-        <form method="POST">
-            <input type="hidden" name="form_id" value="search">
-            <button type="submit">Search for Influencers</button>
-        </form>
-        <a href="{{ url_for('home') }}" class="button">Logout</a>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Welcome {{ sponsor.name }}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                  <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Campaigns</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Stats</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('search', type='influencer') }}">Find</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+              </ul>
+            </div>
+        </nav>
         
-        <div id="Profile" style="display: block;">
+        <!-- Profile Page -->
+        <div id="Profile">
             <h1>Welcome, {{ sponsor.name }}</h1>
             <p>Industry: {{ sponsor.industry }}</p>
             <p>Email: {{ sponsor.email }}</p>
-            <button onclick="Form_toggle('EditProfile')">Edit Details</button>
-            <div id="EditProfile" style="display: none;">
-                <form method="POST">
-                    <input type="hidden" name="form_id" value="edit_profile">
-                    Name: <input type="text" name="name" value="{{ sponsor.name }}"><br>
-                    Industry: <input type="text" name="industry" value="{{ sponsor.industry }}"><br>
-                    <button type="submit">Submit</button>
-                </form>
-                <button onclick="hideForm('EditProfile')">Cancel</button>
+            <!-- Edit Profile modal -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                Edit Profile
+            </button>
+            
+            <!-- Edit Profile Modal -->
+            <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form method="POST" id="edit_profile">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="form_id" value="edit_profile">
+                            <!-- Name input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="text" name="name" id="Full_Name" value="{{ sponsor.name }}" class="form-control" required maxlength="45" pattern="^[a-zA-Z]+"/>
+                                <label class="form-label" for="Full_Name">Full Name</label>
+                            </div>
+
+                            <!-- Industry input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="text" id="Industry" name="industry" value="{{ sponsor.industry }}" class="form-control" required maxlength="45" pattern="^[a-zA-Z]+"/>
+                                <label class="form-label" for="Industry">Industry</label>
+                            </div>
+                        
+                            <!-- Password input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="password" id="Pass" name="pass" class="form-control" required minlength="8" pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,}$"/>
+                                <label class="form-label" for="Pass">Change Password</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+                </div>
             </div>
         </div>
-        <div id="Current_Campaigns" style="display: none;">
+
+        <!-- Campaigns Page -->
+        <div id="Campaigns">
             <h1>Published Campaigns</h1>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCampaign">
+                Add Campaign
+            </button>
+            <!-- Add Campaign Modal -->
+            <div class="modal fade" id="addCampaign" tabindex="-1" role="dialog" aria-labelledby="addCampaignLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form method="POST" id="add_campaign">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addCampaignLabel">Add Campaign</h5>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="form_id" value="add_campaign">
+                            <!-- Name input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="text" name="name" id="name" class="form-control" required/>
+                                <label class="form-label" for="name">Campaign Name</label>
+                            </div>
+
+                            <!-- Description input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="text" id="Description" name="description" class="form-control" required/>
+                                <label class="form-label" for="description">Description</label>
+                            </div>
+
+                            <!-- Goals input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="text" id="Goals" name="goals" class="form-control" required/>
+                                <label class="form-label" for="goals">Goals</label>
+                            </div>
+
+                            <!-- Budget input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="number" id="Budget" name="budget" class="form-control" required pattern="^[0-9]+"/>
+                                <label class="form-label" for="budget">Budget</label>
+                            </div>
+
+                            <!-- Visibility input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="text" id="Visibility" name="visibility" class="form-control" required/>
+                                <label class="form-label" for="visibility">Visibility</label>
+                            </div>
+
+                            <!-- Start Date input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="date" id="Start_date" name="start_date" class="form-control" required/>
+                                <label class="form-label" for="start_date">Start Date</label>
+                            </div>
+
+                            <!-- End Date input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="date" id="End_date" name="end_date" class="form-control" required/>
+                                <label class="form-label" for="end_date">End Date</label>
+                            </div>
+                        
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Add Campaign</button>
+                        </div>
+                    </form>
+                </div>
+                </div>
+            </div>
             {% if campaigns | length == 0 %}
                 <p>No campaigns published yet.</p>
             {% endif %}
             {% for campaign in campaigns %}
-                <p>{{ campaign.name }}</p>
-                <p>{{ campaign.goals }}</p>
-                <p>{{ campaign.visibility }}</p>
-                <p>{{ campaign.budget }}</p>
-                <p>{{ campaign.start_date }}</p>
-                <p>{{ campaign.end_date }}</p>
-                <button onclick="showForm('Edit_Form'); hideForm('Delete_Form'); id_toggle2('edit_campaign','{{ campaign.campaign_id }}');
-                Fill_Campaign('{{ campaign.name }}', '{{ campaign.goals }}', '{{ campaign.visibility }}', '{{ campaign.start_date }}', '{{ campaign.end_date }}', '{{ campaign.budget }}')">Edit</button>
-                <button onclick="hideForm('Edit_Form'); showForm('Delete_Form'); id_toggle2('delete_campaign','{{ campaign.campaign_id }}')">Delete</button>
+                <br>
+                <div class="card">
+                    <div class="card-header">
+                        {{ campaign.name }}
+                    </div>
+                    <div class="card-body">
+                    <p class="card-text">Description: {{ campaign.description }}</p>
+                    <p class="card-text">Goals: {{ campaign.goals }}</p>
+                    <p class="card-text">Visibility: {{ campaign.visibility }}</p>
+                    <p class="card-text">Budget: {{ campaign.budget }}</p>
+                    <p class="card-text">Active from {{ campaign.start_date }} to {{ campaign.end_date }}</p>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ campaign.progress }}%;" aria-valuenow="{{ campaign.progress }}" aria-valuemin="0" aria-valuemax="100">{{ campaign.progress }}%</div>
+                    </div>
+                    <br>
+                    <!-- Edit Campaign Button -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editCampaign{{ campaign.id }}">
+                        Edit Campaign
+                    </button>
+                    <!-- Delete Campaign Button -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deleteCampaign{{ campaign.id }}">
+                        Delete Campaign
+                    </button>
+                    </div>
+                </div>
+                <!-- Edit Campaign Modal -->
+                <div class="modal fade" id="editCampaign{{ campaign.id }}" tabindex="-1" role="dialog" aria-labelledby="editCampaignLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <form method="POST" id="edit_campaign">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editCampaignLabel">Edit Campaign</h5>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="form_id" value="edit_campaign">
+                                <input type="hidden" name="id" value="{{ campaign.id }}">
+                                <!-- Name input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="text" name="name" id="name" value="{{ campaign.name }}" class="form-control" required/>
+                                    <label class="form-label" for="name">Campaign Name</label>
+                                </div>
+
+                                <!-- Description input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="text" id="Description" name="description" value="{{ campaign.description }}" class="form-control" required/>
+                                    <label class="form-label" for="description">Description</label>
+                                </div>
+
+                                <!-- Goals input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="text" id="Goals" name="goals" value="{{ campaign.goals }}" class="form-control" required/>
+                                    <label class="form-label" for="goals">Goals</label>
+                                </div>
+
+                                <!-- Budget input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="number" id="Budget" name="budget" value="{{ campaign.budget }}" class="form-control" required/>
+                                    <label class="form-label" for="budget">Budget</label>
+                                </div>
+
+                                <!-- Visibility input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="text" id="Visibility" name="visibility" value="{{ campaign.visibility }}" class="form-control" required/>
+                                    <label class="form-label" for="visibility">Visibility</label>
+                                </div>
+
+                                <!-- Start Date input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="date" id="Start_date" name="start_date" value="{{ campaign.start_date }}" class="form-control" required/>
+                                    <label class="form-label" for="start_date">Start Date</label>
+                                </div>
+
+                                <!-- End Date input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="date" id="End_date" name="end_date" value="{{ campaign.end_date }}" class="form-control" required/>
+                                    <label class="form-label" for="end_date">End Date</label>
+                                </div>
+                            
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+                <!-- Delete Campaign Modal -->
+                <div class="modal fade" id="deleteCampaign{{ campaign.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteCampaignLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <form method="POST" id="delete_campaign">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteCampaignLabel">Delete Campaign</h5>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="form_id" value="delete_campaign">
+                                <input type="hidden" name="id" value="{{ campaign.id }}">
+                                <label class="form-label">Are you sure?</label>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Delete Campaign</button>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
             {% endfor %}
-            <div id="Edit_Form" style="display: none;">
-                <form method="POST" id="edit_campaign">
-                    <input type="hidden" name="campaign_id">
-                    <input type="hidden" name="form_id" value="edit">
-                    Name: <input type="text" name="name"><br>
-                    Goals: <input type="text" name="goals"><br>
-                    Start Date: <input type="date" name="start_date"><br>
-                    End Date: <input type="date" name="end_date"><br>
-                    Visibility: <input type="radio" id="public" name="visibility" value="public">
-                    <label for="public">Public</label>
-                    <input type="radio" id="private" name="visibility" value="private">
-                    <label for="private">Private</label><br>
-                    Budget: <input type="number" name="budget"><br>
-                    <button type="submit">Submit</button>
-                </form>
-                <button onclick="hideForm('Edit_Form')">Cancel</button>
-            </div>
-            <div id="Delete_Form" style="display: none;">
-                <form method="POST" id="delete_campaign">
-                    <input type="hidden" name="campaign_id">
-                    <input type="hidden" name="form_id" value="delete">
-                    <h1>Are you sure you want to delete this campaign?</h1>
-                    <button type="submit">Delete</button>
-                </form>
-                <button onclick="hideForm('Delete_Form')">Cancel</button>
-            </div>
         </div>
-        <div id="Ad_Request" style="display: none;">
+
+        <!-- Ad Requests Page -->
+        <div id="Ad_Request">
             <h1>Ad Requests</h1>
             {% if ad_requests | length == 0 %}
                 <p>No Ad Requests sent yet.</p>
             {% endif %}
             {% for ad_request in ad_requests %}
-                <p>{{ ad_request.messages }}</p>
-                <p>{{ ad_request.requirements }}</p>
-                <p>{{ ad_request.payment_amount }}</p>
-                {% if ad_request.sent_to_influencer %}
-                    <p>Sent to Influencer</p>
-                    <p>Status: {{ ad_request.status }}</p>
-                {% else %}
-                    <p>Reverted from Influencer</p>
-                    <form method="POST">
-                        <input type="hidden" name="form_id" value="ad_request">
-                        <input type="hidden" name="ad_request_id" value="{{ ad_request.ad_request_id }}">
-                        <button type="submit" name="status" value="Accept">Accept</button>
-                        <button type="submit" name="status" value="Reject">Reject</button>
-                    </form>
-                {% endif %}
+                <div class="card">
+                    <div class="card-header">
+                        {{ ad_request.name }}
+                    </div>
+                    <div class="card-body">
+                    <p class="card-text">Messages: {{ ad_request.messages }}</p>
+                    <p class="card-text">Requirements: {{ ad_request.requirements }}</p>
+                    <p class="card-text">Payment Amount: {{ ad_request.payment_amount }}</p>
+                    <p class="card-text">Influencer Assigned: {{ ad_request.influencer_name }}</p>
+                    {% if ad_request.negotiate and ad_request.status == "Pending" %}
+                        <!-- Revert Ad Request Button -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#revertAd{{ ad_request.id }}">
+                            Revert
+                        </button>
+                        <!-- Revert Ad Request Modal -->
+                        <div class="modal fade" id="revertAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="revertAd" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <form method="POST" id="revert_ad">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="revertAd">Revert to Ad Request</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" name="form_id" value="revert_ad">
+                                        <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                        <label class="form-label">Would you like to Accept or Reject?</label>
+                                        <label class="form-label">Ad Request for Campaign {{ ad_request.name }}</label>
+                                        <label class="form-label">Messages: {{ ad_request.messages }}</label>
+                                        <label class="form-label">Requirements: {{ ad_request.requirements }}</label>
+                                        <label class="form-label">Payment Amount: {{ ad_request.payment_amount }}</label>
+                                        <label class="form-label">Influencer Assigned: {{ ad_request.influencer_name }}</label>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" name="status" value="Accept" class="btn btn-primary">Accept</button>
+                                        <button type="submit" name="status" value="Reject" class="btn btn-primary">Reject</button>
+                                    </div>
+                                </form>
+                            </div>
+                            </div>
+                        </div>
+                    {% elif not ad_request.negotiate %}
+                        <p>Status: {{ ad_request.status }}</p>
+                        <!-- Withdraw Ad Request Button -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#withdrawAd{{ ad_request.id }}">
+                            Withdraw
+                        </button>
+                        <!-- Withdraw Ad Request Modal -->
+                        <div class="modal fade" id="withdrawAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="withdrawAd" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <form method="POST" id="withdraw_ad">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="withdrawAd">Withdrawing Ad Request</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" name="form_id" value="withdraw_ad">
+                                        <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                        <label class="form-label">Are you sure, you want to withdraw?</label>
+                                        <label class="form-label">Ad Request for Campaign {{ ad_request.name }}</label>
+                                        <label class="form-label">Messages: {{ ad_request.messages }}</label>
+                                        <label class="form-label">Requirements: {{ ad_request.requirements }}</label>
+                                        <label class="form-label">Payment Amount: {{ ad_request.payment_amount }}</label>
+                                        <label class="form-label">Influencer Assigned: {{ ad_request.influencer_name }}</label>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Withdraw</button>
+                                    </div>
+                                </form>
+                            </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p>Status: {{ ad_request.status }}</p>
+                    {% endif %}
+                    </div>
+                </div>
             {% endfor %}
         </div>
-        <div id="Campaign_Form" style="display: none;">
-            <form method="POST">
-                <input type="hidden" name="form_id" value="campaign">
-                Name: <input type="text" name="name"><br>
-                Goals: <input type="text" name="goals"><br>
-                Start Date: <input type="date" name="start_date"><br>
-                End Date: <input type="date" name="end_date"><br>
-                Visibility: <input type="radio" id="public" name="visibility" value="public" checked>
-                <label for="public">Public</label>
-                <input type="radio" id="private" name="visibility" value="private">
-                <label for="private">Private</label><br>
-                Budget: <input type="number" name="budget"><br>
-                <button type="submit">Create</button>
-            </form>
-        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </body>
 </html>
