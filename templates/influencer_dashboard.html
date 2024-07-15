@@ -5,6 +5,15 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     </head>
     <body>
+        {% if "success" in error %}
+        <div class="alert alert-success" role="alert">
+            {{ error }}
+        </div>
+        {% elif error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <a class="navbar-brand" href="#">Welcome {{ influencer.name }}</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -14,16 +23,13 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                  <a class="nav-link" href="#">Home</a>
+                  <a class="nav-link" href="#Profile">Profile</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Ad Requests</a>
+                  <a class="nav-link" href="#Ad_Requests">Ad Requests</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Stats</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('search', type='campaign') }}">Find</a>
+                    <a class="nav-link" href="{{ url_for('search') }}">Find Campaigns</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
@@ -55,25 +61,72 @@
                             <input type="hidden" name="form_id" value="edit_profile">
                             <!-- Name input -->
                             <div data-mdb-input-init class="form-outline mb-4">
-                                <input type="text" name="name" id="Full_Name" value="{{ influencer.name }}" class="form-control" required maxlength="45" pattern="^[a-zA-Z]+"/>
+                                <input type="text" name="name" id="Full_Name" value="{{ influencer.name }}" class="form-control" maxlength="45" pattern="^[\w\-\s]+$"/>
                                 <label class="form-label" for="Full_Name">Full Name</label>
                             </div>
 
                             <!-- Category input -->
                             <div data-mdb-input-init class="form-outline mb-4">
-                                <input type="text" id="Category" name="category" value="{{ influencer.category }}" class="form-control" required maxlength="45" pattern="^[a-zA-Z]+"/>
-                                <label class="form-label" for="Category">Industry</label>
+                                <select id="category" name="category" class="form-control" value="{{ influencer.category }}">
+                                    <option value="beauty">Beauty</option>
+                                    <option value="fashion">Fashion</option>
+                                    <option value="fitness">Fitness</option>
+                                    <option value="health">Health</option>
+                                    <option value="travel">Travel</option>
+                                    <option value="food">Food</option>
+                                    <option value="lifestyle">Lifestyle</option>
+                                    <option value="gaming">Gaming</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="photography">Photography</option>
+                                    <option value="music">Music</option>
+                                    <option value="parenting">Parenting</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="education">Education</option>
+                                    <option value="sports">Sports</option>
+                                    <option value="art">Art</option>
+                                    <option value="home-decor">Home Decor</option>
+                                    <option value="pets">Pets</option>
+                                    <option value="automotive">Automotive</option>
+                                    <option value="books">Books</option>
+                                    <option value="diy">DIY</option>
+                                    <option value="environment">Environment</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="business">Business</option>
+                                    <option value="spirituality">Spirituality</option>
+                                    <option value="dating">Dating</option>
+                                    <option value="career">Career</option>
+                                    <option value="event-planning">Event Planning</option>
+                                    <option value="gaming-cosplay">Gaming Cosplay</option>
+                                    <option value="luxury">Luxury</option>
+                                    <option value="outdoors">Outdoors</option>
+                                    <option value="wellness">Wellness</option>
+                                    <option value="mental-health">Mental Health</option>
+                                    <option value="non-profit">Non-Profit</option>
+                                    <option value="comedy">Comedy</option>
+                                    <option value="news">News</option>
+                                    <option value="personal-development">Personal Development</option>
+                                    <option value="relationship">Relationship</option>
+                                    <option value="social-justice">Social Justice</option>
+                                    <option value="sustainable-living">Sustainable Living</option>
+                                    <option value="tech-gadgets">Tech Gadgets</option>
+                                    <option value="videography">Videography</option>
+                                    <option value="yoga">Yoga</option>
+                                    <option value="crypto">Crypto</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="real-estate">Real Estate</option>
+                                </select>
+                                <label class="form-label" for="category">Category</label>
                             </div>
 
                             <!-- Reach input -->
                             <div data-mdb-input-init class="form-outline mb-4">
-                                <input type="number" id="Reach" name="reach" value="{{ influencer.reach }}" class="form-control" required/>
+                                <input type="number" id="Reach" name="reach" value="{{ influencer.reach }}" class="form-control"/>
                                 <label class="form-label" for="Reach">Reach</label>
                             </div>
                         
                             <!-- Password input -->
                             <div data-mdb-input-init class="form-outline mb-4">
-                                <input type="password" id="Pass" name="pass" class="form-control" required minlength="8" pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,}$"/>
+                                <input type="password" id="Pass" name="pass" class="form-control" minlength="8" pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,}$"/>
                                 <label class="form-label" for="Pass">Change Password</label>
                             </div>
                         </div>
@@ -88,7 +141,7 @@
         </div>
 
         <!-- Ad Requests Page -->
-        <div id="Ad_Request">
+        <div id="Ad_Requests">
             <h1>Ad Requests</h1>
             {% if ad_requests | length == 0 %}
                 <p>No Ad Requests recieved yet.</p>
@@ -162,8 +215,10 @@
                                 </div>
                                 </div>
                             </div>
-                        {% else %}
+                        {% elif status == "Pending" %}
                             <p>Status: {{ ad_request.status }}</p>
+                        {% else %}
+                            <p>Status: {{ ad_request.status }}ed</p>
                         {% endif %}
                     </div>
                 </div>

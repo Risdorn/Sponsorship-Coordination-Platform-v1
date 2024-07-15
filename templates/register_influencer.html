@@ -13,6 +13,11 @@
                                 class="img-fluid" alt="Sample image">
                             </div>
                             <div class="col-md-9 col-lg-6 col-xl-5 offset-xl-1">
+                                {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </div>
+                                {% endif %}
                                 <h1 class="mt-5 mb-4" >Sign Up</h1>
                                 <form method="POST" onsubmit="return passMatch(event)">
                                     
@@ -46,13 +51,61 @@
                                     
                                     <!-- Category input -->
                                     <div data-mdb-input-init class="form-outline mb-4">
-                                        <input type="text" id="Category" name="category" class="form-control" required maxlength="45" pattern="^[a-zA-Z]+"/>
-                                        <label class="form-label" for="Category">Category</label>
+                                        <select id="category" name="category" class="form-control" required>
+                                            <option value="" disabled selected>Choose your Category</option>
+                                            <option value="beauty">Beauty</option>
+                                            <option value="fashion">Fashion</option>
+                                            <option value="fitness">Fitness</option>
+                                            <option value="health">Health</option>
+                                            <option value="travel">Travel</option>
+                                            <option value="food">Food</option>
+                                            <option value="lifestyle">Lifestyle</option>
+                                            <option value="gaming">Gaming</option>
+                                            <option value="technology">Technology</option>
+                                            <option value="photography">Photography</option>
+                                            <option value="music">Music</option>
+                                            <option value="parenting">Parenting</option>
+                                            <option value="finance">Finance</option>
+                                            <option value="education">Education</option>
+                                            <option value="sports">Sports</option>
+                                            <option value="art">Art</option>
+                                            <option value="home-decor">Home Decor</option>
+                                            <option value="pets">Pets</option>
+                                            <option value="automotive">Automotive</option>
+                                            <option value="books">Books</option>
+                                            <option value="diy">DIY</option>
+                                            <option value="environment">Environment</option>
+                                            <option value="entertainment">Entertainment</option>
+                                            <option value="business">Business</option>
+                                            <option value="spirituality">Spirituality</option>
+                                            <option value="dating">Dating</option>
+                                            <option value="career">Career</option>
+                                            <option value="event-planning">Event Planning</option>
+                                            <option value="gaming-cosplay">Gaming Cosplay</option>
+                                            <option value="luxury">Luxury</option>
+                                            <option value="outdoors">Outdoors</option>
+                                            <option value="wellness">Wellness</option>
+                                            <option value="mental-health">Mental Health</option>
+                                            <option value="non-profit">Non-Profit</option>
+                                            <option value="comedy">Comedy</option>
+                                            <option value="news">News</option>
+                                            <option value="personal-development">Personal Development</option>
+                                            <option value="relationship">Relationship</option>
+                                            <option value="social-justice">Social Justice</option>
+                                            <option value="sustainable-living">Sustainable Living</option>
+                                            <option value="tech-gadgets">Tech Gadgets</option>
+                                            <option value="videography">Videography</option>
+                                            <option value="yoga">Yoga</option>
+                                            <option value="crypto">Crypto</option>
+                                            <option value="investment">Investment</option>
+                                            <option value="real-estate">Real Estate</option>
+                                        </select>
+                                        <label class="form-label" for="category">Category</label>
                                     </div>
 
                                     <!-- Reach input -->
                                     <div data-mdb-input-init class="form-outline mb-4">
-                                        <input type="number" id="Reach" name="reach" class="form-control" required maxlength="45" pattern="^[0-9]+"/>
+                                        <input type="number" id="Reach" name="reach" class="form-control" required maxlength="45" pattern="^[0-9]+$"/>
                                         <label class="form-label" for="Reach">Reach</label>
                                     </div>
 

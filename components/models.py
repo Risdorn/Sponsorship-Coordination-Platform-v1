@@ -20,15 +20,15 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False, unique = True)
     password = db.Column(db.String, nullable=False)
-    industry = db.Column(db.String, nullable=False, default="")
-    category = db.Column(db.String, nullable=False, default="")
-    reach = db.Column(db.Float, nullable=False, default=0)
+    industry = db.Column(db.String)
+    category = db.Column(db.String)
+    reach = db.Column(db.Float)
     
 # Ad_request class, A request from a sponsor to an influencer to advertise their product
 class Ad_request(db.Model):
     __tablename__ = "ad_request"
     id = db.Column(db.Integer, primary_key=True, unique = True, nullable=False)
-    influencer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    influencer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     #sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), nullable=False)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
     messages = db.Column(db.String, nullable=False)
@@ -48,6 +48,7 @@ class Campaign(db.Model):
     description = db.Column(db.String, nullable=False)
     goals = db.Column(db.String, nullable=False)
     budget = db.Column(db.Float, nullable=False)
+    remaining = db.Column(db.Float, nullable=False)
     visibility = db.Column(db.String, nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)

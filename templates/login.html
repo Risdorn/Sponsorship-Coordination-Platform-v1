@@ -6,7 +6,9 @@
   </head>
   <body>
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
     {% endif %}
     <section class="vh-100">
       <div class="container-fluid h-custom">
