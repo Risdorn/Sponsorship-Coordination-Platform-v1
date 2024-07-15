@@ -188,7 +188,17 @@ def sponsor_dashboard():
     campaigns = get_sponsor_campaigns(sponsor.id)
     ad_requests = []
     for campaign in campaigns:
-        ad_requests += get_campaign_ad_requests(campaign.id)
+        ad_requests_t = get_campaign_ad_requests(campaign.id)
+        for ad_request in ad_requests_t:
+            if not ad_request.influencer_id:
+                ad_request.influencer_name = "Not Assigned"
+                ad_request.name = campaign.name
+                continue
+            print(ad_request.influencer_id)
+            influencer = get_user(None, ad_request.influencer_id)
+            ad_request.influencer_name = influencer.name
+            ad_request.name = campaign.name
+        ad_requests += ad_requests_t
     if request.method == 'GET':
         # Get the sponsor dashboard
         return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error="")
@@ -201,6 +211,7 @@ def sponsor_dashboard():
         name = request.form['name']
         description = request.form['description']
         goals = request.form['goals']
+        niche = request.form['niche']
         budget = request.form['budget']
         visibility = request.form['visibility']
         start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
@@ -208,7 +219,7 @@ def sponsor_dashboard():
         # Check if the form is valid
         if not validate_campaign(name, description, start_date, end_date, budget, goals):
             return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error='Please fill all fields correctly')
-        create_campaign(sponsor.id, name, description, start_date, end_date, budget, visibility, goals)
+        create_campaign(sponsor.id, name, description, start_date, end_date, niche, budget, visibility, goals)
         return redirect(url_for('sponsor_dashboard'))
     elif request.method == 'POST' and request.form['form_id'] == 'edit_campaign':
         # Edit a campaign
@@ -216,7 +227,7 @@ def sponsor_dashboard():
         start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d')
         end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d')
         update_campaign(campaign_id, {"name": request.form.get('name'), "description": request.form.get('description'), "start_date": start_date, "end_date": end_date, 
-                                      "budget": request.form.get('budget'), "visibility": request.form.get('visibility'), "goals": request.form.get('goals')})
+                                      "budget": request.form.get('budget'), "visibility": request.form.get('visibility'), "goals": request.form.get('goals'), "niche": request.form.get('niche')})
         return redirect(url_for('sponsor_dashboard'))
     elif request.method == 'POST' and request.form['form_id'] == 'delete_campaign':
         # Delete a campaign and all its ad requests
@@ -257,6 +268,10 @@ def influencer_dashboard():
     influencer = current_user
     # Get the influencer's ad requests
     ad_requests = get_influencer_ad_requests(influencer.id)
+    for ad_request in ad_requests:
+        campaign = get_campaign(ad_request.campaign_id)
+        ad_request.name = campaign.name
+        ad_request.influencer_name = influencer.name
     if request.method == 'GET':
         # Get the influencer dashboard
         return render_template('influencer_dashboard.html', influencer=influencer, ad_requests=ad_requests, error="")
@@ -291,6 +306,14 @@ def campaign(id):
     # Get the campaign details and ad requests
     campaign = get_campaign(id)
     ad_requests = get_campaign_ad_requests(id)
+    for ad_request in ad_requests:
+        if not ad_request.influencer_id:
+            ad_request.influencer_name = "Not Assigned"
+            ad_request.name = campaign.name
+            continue
+        influencer = get_user(None, ad_request.influencer_id)
+        ad_request.influencer_name = influencer.name
+        ad_request.name = campaign.name
     if request.method == 'GET':
         # Get the campaign page
         return render_template('campaign.html', type=user.role, name = name, campaign=campaign, ad_requests=ad_requests, error="")
@@ -340,7 +363,7 @@ def search():
     # Get the search results based on the user's role
     campaign = []
     if request.method == 'GET' and user.role == 'Influencer':
-        campaigns = search_campaign(None, None)
+        campaigns = search_campaign(None, None, None)
         return render_template('search.html', type=user.role, results=campaigns, campaign=campaign, id=user.id, error="")
     elif request.method == 'GET' and user.role == 'Sponsor':
         influencers = search_user(None, None, None)
@@ -350,14 +373,15 @@ def search():
         # Search for influencers or campaigns
         name = request.form.get('search')
         sort = request.form.get('sort')
-        category = request.form.getlist('category')
+        category = request.form.get('category')
+        niche = request.form.get('niche')
         if user.role == 'Sponsor':
             # Search for influencers
             results = search_user(name, sort, category)
             campaign = get_sponsor_campaigns(user.id)
         elif user.role == 'Influencer':
             # Search for campaigns
-            results = search_campaign(name, sort)
+            results = search_campaign(name, sort, niche)
         return render_template('search.html', type=user.role, results=results, campaign=campaign, id=user.id, error="")
     elif request.method == 'POST' and request.form['form_id'] == 'ad_request':
         results = search_user(None, None, None)

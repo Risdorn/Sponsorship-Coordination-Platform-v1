@@ -47,6 +47,7 @@ class Campaign(db.Model):
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
     goals = db.Column(db.String, nullable=False)
+    niche = db.Column(db.String, nullable=False)
     budget = db.Column(db.Float, nullable=False)
     remaining = db.Column(db.Float, nullable=False)
     visibility = db.Column(db.String, nullable=False)

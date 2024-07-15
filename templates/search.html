@@ -35,17 +35,17 @@
                     <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                 </li>
               </ul>
-              <form class="d-flex" method="POST">
+              <form class="d-flex mr-auto" method="POST">
                 <input type="hidden" name="form_id" value="search_name">
-                <input class="form-control me-2" type="search" name="search" placeholder="Search" aria-label="Search">
-                <select class="form-select" name="sort" id="sort" aria-label="Default select example">
+                <input class="form-control me-2" type="search" name="search" placeholder="Search" aria-label="Search" style="width:200px">
+                <select class="form-select me-2" name="sort" id="sort" aria-label="Sort" style="width:150px">
                     <option value="{{ None }}" select>None</option>
                     <option value="High">Ascending</option>
                     <option value="Low">Descending</option>
                 </select>
                 {% if type == "Sponsor" %}
-                <label class="form-label" for="Search_Type">Sort By Reach</label>
-                <select id="category" name="category" class="form-control" multiple>
+                <label for="Search_Type" style="width:120px; align-content: center;">Sort By Reach</label>
+                <select id="category" name="category" class="form-select me-2" style="width:200px">
                     <option value="{{ None }}" disable select>Filter by Categories</option>
                     <option value="beauty">Beauty</option>
                     <option value="fashion">Fashion</option>
@@ -94,9 +94,78 @@
                     <option value="investment">Investment</option>
                     <option value="real-estate">Real Estate</option>
                 </select>
-                <label class="form-label" for="category">Category</label>
+                <label for="category" style="width:100px; align-content: center;">Category</label>
                 {% elif type == "Influencer" %}
-                <label class="form-label" for="Search_Type">Sort By Budget</label>
+                <label for="Search_Type" style="width:120px; align-content: center;">Sort By Budget</label>
+                <select id="niche" name="niche" class="form-select me-2" style="width:200px">
+                    <option value="{{ None }}">None</option>
+                    <option value="beauty">Beauty</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="health">Health</option>
+                    <option value="travel">Travel</option>
+                    <option value="food">Food</option>
+                    <option value="lifestyle">Lifestyle</option>
+                    <option value="gaming">Gaming</option>
+                    <option value="technology">Technology</option>
+                    <option value="photography">Photography</option>
+                    <option value="music">Music</option>
+                    <option value="parenting">Parenting</option>
+                    <option value="finance">Finance</option>
+                    <option value="education">Education</option>
+                    <option value="sports">Sports</option>
+                    <option value="art">Art</option>
+                    <option value="home-decor">Home Decor</option>
+                    <option value="pets">Pets</option>
+                    <option value="automotive">Automotive</option>
+                    <option value="books">Books</option>
+                    <option value="diy">DIY</option>
+                    <option value="environment">Environment</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="business">Business</option>
+                    <option value="spirituality">Spirituality</option>
+                    <option value="dating">Dating</option>
+                    <option value="career">Career</option>
+                    <option value="event-planning">Event Planning</option>
+                    <option value="gaming-cosplay">Gaming Cosplay</option>
+                    <option value="luxury">Luxury</option>
+                    <option value="outdoors">Outdoors</option>
+                    <option value="wellness">Wellness</option>
+                    <option value="mental-health">Mental Health</option>
+                    <option value="non-profit">Non-Profit</option>
+                    <option value="comedy">Comedy</option>
+                    <option value="news">News</option>
+                    <option value="personal-development">Personal Development</option>
+                    <option value="relationship">Relationship</option>
+                    <option value="social-justice">Social Justice</option>
+                    <option value="sustainable-living">Sustainable Living</option>
+                    <option value="tech-gadgets">Tech Gadgets</option>
+                    <option value="videography">Videography</option>
+                    <option value="yoga">Yoga</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="investment">Investment</option>
+                    <option value="real-estate">Real Estate</option>
+                    <option value="home-improvement">Home Improvement</option>
+                    <option value="mobile-apps">Mobile Apps</option>
+                    <option value="e-commerce">E-commerce</option>
+                    <option value="product-reviews">Product Reviews</option>
+                    <option value="podcasts">Podcasts</option>
+                    <option value="tech-reviews">Tech Reviews</option>
+                    <option value="web-development">Web Development</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="freelancing">Freelancing</option>
+                    <option value="startup">Startup</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="crafts">Crafts</option>
+                    <option value="vlogging">Vlogging</option>
+                    <option value="nutrition">Nutrition</option>
+                    <option value="alternative-medicine">Alternative Medicine</option>
+                    <option value="gardening">Gardening</option>
+                    <option value="personal-finance">Personal Finance</option>
+                    <option value="self-care">Self-Care</option>
+                </select>
+                <label for="niche" style="width:100px; align-content: center;">Niche</label>
                 {% endif %}
                 <button class="btn btn-outline-success" type="submit">Search</button>
               </form>
@@ -162,6 +231,7 @@
                     <div class="card-body">
                         <p class="card-text">{{ campaign.description }}</p>
                         <p class="card-text">{{ campaign.goals }}</p>
+                        <p class="card-text">{{ campaign.niche }}</p>
                         <p class="card-text">{{ campaign.budget }}</p>
                         <p class="card-text">{{ campaign.start_date }}</p>
                         <p class="card-text">{{ campaign.end_date }}</p>
