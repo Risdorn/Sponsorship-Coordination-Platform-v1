@@ -32,6 +32,11 @@ db.init_app(app)
 from components.user import *
 from components.ad_request import *
 from components.campaign import *
+from components.flag import *
+from components.api import api
+
+# Register the api blueprint
+app.register_blueprint(api)
 
 # Create the database tables
 with app.app_context():
@@ -41,83 +46,13 @@ with app.app_context():
     # Index 1 is used to get the admin user
     admin = get_user("", 1)
     if not admin:
-        create_user("Admin", "admin@gmail.com", "admin", "Admin")
+        create_user("Admin", "admin@gmail.com", "Admin@12", "Admin")
     elif admin.role != "Admin":
         print("Something went wrong, the admin user is not an admin")
         sys.exit()
-    
-# Home page, Gives a breif description of the platform and provides login and register options
-@app.route('/', methods=['GET'])
-def home():
-    if request.method == 'GET':
-        return render_template('home.html')
-
-# Admin login page, Allows the admin to login to the platform
-@app.route('/admin_login', methods=['GET', 'POST'])
-def admin_login():
-    if request.method == 'GET':
-        # Get the admin login page
-        return render_template('admin_login.html')
-    elif request.method == 'POST':
-        # Get the login credentials and check if they are correct
-        email = request.form['email']
-        password = request.form['password']
-        # If the admin credentials are correct, redirect to the admin dashboard
-        if email == 'admin@gmail.com' and password == 'admin':
-            return redirect(url_for('admin'))
-        return render_template('admin_login.html', error='Email or Password is incorrect, please try again')
-
-# Admin dashboard, Allows the admin to view all the data in the platform
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'GET':
-        # Get the admin dashboard
-        '''
-        sponsors = all_sponsors()
-        influencers = all_influencers()
-        ad_requests = all_ad_requests()
-        campaigns = all_campaigns()
-        for campaign in campaigns:
-            sponsor = Sponsor.query.filter_by(sponsor_id=campaign.sponsor_id).first()
-            campaign.sponsor_name = sponsor.name
-        for ad_request in ad_requests:
-            influencer = Influencer.query.filter_by(influencer_id=ad_request.influencer_id).first()
-            campaign = Campaign.query.filter_by(campaign_id=ad_request.campaign_id).first()
-            sponsor = Sponsor.query.filter_by(sponsor_id=campaign.sponsor_id).first()
-            ad_request.influencer_name = influencer.name
-            ad_request.campaign = campaign.name
-            ad_request.sponsor_name = sponsor.name
-        return render_template('admin.html', sponsors=sponsors, influencers=influencers, ad_requests=ad_requests, campaigns=campaigns)
-    elif request.method == 'POST' and request.form['form_id'] == 'influencer':
-        influencer_id = request.form['id']
-        influencer = Influencer.query.filter_by(influencer_id=influencer_id).first()
-        influencer.flagged = True
-        influencer.reason = request.form['reason']
-        db.session.commit()
-        return redirect(url_for('admin'))
-    elif request.method == 'POST' and request.form['form_id'] == 'sponsor':
-        sponsor_id = request.form['id']
-        sponsor = Sponsor.query.filter_by(sponsor_id=sponsor_id).first()
-        sponsor.flagged = True
-        sponsor.reason = request.form['reason']
-        db.session.commit()
-        return redirect(url_for('admin'))
-    elif request.method == 'POST' and request.form['form_id'] == 'ad_request':
-        ad_request_id = request.form['id']
-        ad_request = Ad_request.query.filter_by(ad_request_id=ad_request_id).first()
-        ad_request.flagged = True
-        ad_request.reason = request.form['reason']
-        db.session.commit()
-        return redirect(url_for('admin'))
-    elif request.method == 'POST' and request.form['form_id'] == 'campaign':
-        campaign_id = request.form['id']
-        campaign = Campaign.query.filter_by(campaign_id=campaign_id).first()
-        campaign.flagged = True
-        campaign.reason = request.form['reason']
-        db.session.commit()
-        return redirect(url_for('admin'))'''
 
 # Login page, Allows users to login to the platform
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -137,6 +72,43 @@ def login():
             return redirect(url_for('sponsor_dashboard'))
         elif user.role == 'Influencer':
             return redirect(url_for('influencer_dashboard'))
+        elif user.role == 'Admin':
+            return redirect(url_for('admin'))
+
+# Admin dashboard, Allows the admin to view all the data in the platform
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    if request.method == 'GET':
+        # Get the admin dashboard
+        page_user = request.args.get('page_user', 1, type=int)
+        page_ad_request = request.args.get('page_ad_request', 1, type=int)
+        page_campaign = request.args.get('page_campaign', 1, type=int)
+        page_flag = request.args.get('page_flag', 1, type=int)
+        users = get_users(page_user)
+        ad_requests = get_ad_requests(page_ad_request)
+        campaigns = get_campaigns(page_campaign)
+        flags = get_flags(page_flag)
+        for i in range(len(flags.items)):
+            flags.items[i] = get_user(None, flags.items[i].type_id)
+        return render_template('admin.html', users=users, ad_requests=ad_requests, campaigns=campaigns, flagged=flags)
+    elif request.method == 'POST' and request.form['form_id'] == 'flag':
+        # Flag a user, or a campaign
+        id = request.form['id']
+        type = request.form['type']
+        reason = request.form['reason']
+        create_flag(type, id, reason)
+        return redirect(url_for('admin'))
+    elif request.method == 'POST' and request.form['form_id'] == "remove_flag":
+        # Remove a flag
+        id = request.form['id']
+        type = request.form['type']
+        delete_flag(type, id)
+        return redirect(url_for('admin'))
+    elif request.method == 'POST' and request.form['form_id'] == 'delete_user':
+        # Delete a user
+        delete_user(request.form['email'])
+        return redirect(url_for('admin'))
 
 # Register page, Allows users to register as a Sponsor
 @app.route('/register', methods=['GET', 'POST'])
@@ -185,27 +157,28 @@ def register_influencer():
 def sponsor_dashboard():
     sponsor = current_user
     # Get the sponsor's campaigns and ad requests
-    campaigns = get_sponsor_campaigns(sponsor.id)
-    ad_requests = []
-    for campaign in campaigns:
-        ad_requests_t = get_campaign_ad_requests(campaign.id)
-        for ad_request in ad_requests_t:
-            if not ad_request.influencer_id:
-                ad_request.influencer_name = "Not Assigned"
-                ad_request.name = campaign.name
-                continue
-            print(ad_request.influencer_id)
-            influencer = get_user(None, ad_request.influencer_id)
-            ad_request.influencer_name = influencer.name
-            ad_request.name = campaign.name
-        ad_requests += ad_requests_t
+    page_campaign = request.args.get('page_campaign', 1, type=int)
+    page_ad_request = request.args.get('page_ad_request', 1, type=int)
+    error = request.args.get('error', '')
+    campaigns = get_sponsor_campaigns(sponsor.id, page_campaign)
+    campaign_id = [campaign.id for campaign in campaigns.items]
+    ad_requests = get_campaign_ad_requests(campaign_id, page_ad_request)
+    for ad_request in ad_requests.items:
+        campaign = get_campaign(ad_request.campaign_id)
+        ad_request.name = campaign.name
+        if not ad_request.influencer_id:
+            ad_request.influencer_name = "Not Assigned"
+            continue
+        influencer = get_user(None, ad_request.influencer_id)
+        ad_request.influencer_name = influencer.name
+    flag = get_flag(sponsor.id, sponsor.role)
     if request.method == 'GET':
         # Get the sponsor dashboard
-        return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error="")
+        return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error=error, flag=flag)
     elif request.method == 'POST' and request.form['form_id'] == 'edit_profile':
         # Update the sponsor profile
         update_user(sponsor.email, {"name": request.form.get('name'), "password": request.form.get('password'), "industry": request.form.get('industry')})
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Profile updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'add_campaign':
         # Create a new campaign
         name = request.form['name']
@@ -218,9 +191,9 @@ def sponsor_dashboard():
         end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
         # Check if the form is valid
         if not validate_campaign(name, description, start_date, end_date, budget, goals):
-            return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error='Please fill all fields correctly')
+            return redirect(url_for('sponsor_dashboard.html', error='Please fill all fields correctly'))
         create_campaign(sponsor.id, name, description, start_date, end_date, niche, budget, visibility, goals)
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Campaign created successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'edit_campaign':
         # Edit a campaign
         campaign_id = request.form.get('id')
@@ -228,14 +201,14 @@ def sponsor_dashboard():
         end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d')
         update_campaign(campaign_id, {"name": request.form.get('name'), "description": request.form.get('description'), "start_date": start_date, "end_date": end_date, 
                                       "budget": request.form.get('budget'), "visibility": request.form.get('visibility'), "goals": request.form.get('goals'), "niche": request.form.get('niche')})
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Campaign updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'delete_campaign':
         # Delete a campaign and all its ad requests
-        ad_requests = get_campaign_ad_requests(request.form['id'])
+        ad_requests = get_campaign_ad_requests([request.form['id']], -1)
         for ad_request in ad_requests:
             delete_ad_request(ad_request.id)
         delete_campaign(request.form['id'])
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Campaign deleted successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'revert_ad':
         # Accept or Reject an ad request and update the campaign budget
         ad_request = get_ad_request(request.form['id'])
@@ -244,21 +217,21 @@ def sponsor_dashboard():
         if status == 'Accept' and not validate_budget(ad_request.payment_amount, ad_request.campaign_id):
             # If the payment amount exceeds the budget, delete the ad request
             delete_ad_request(ad_request.id)
-            return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error='Payment amount exceeds budget, deleting ad request')
+            return redirect(url_for('sponsor_dashboard', error='Payment amount exceeds budget, deleting ad request'))
         update_ad_request(ad_request.id, {"status": status})
         if status == 'Accept': update_campaign(ad_request.campaign_id, {"remaining": ad_request.payment_amount})
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Ad request updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'edit_ad':
         # Edit an ad request
         if not validate_ad_request(request.form['messages'], request.form['requirements'], request.form['payment_amount']):
-            return render_template('sponsor_dashboard.html', sponsor=sponsor, campaigns=campaigns, ad_requests=ad_requests, error='Please fill all fields correctly')
+            return redirect(url_for('sponsor_dashboard', error='Please fill all fields correctly'))
         update_ad_request(request.form['id'], {"messages": request.form['messages'], "requirements": request.form['requirements'], 
                                                "payment_amount": request.form['payment_amount']})
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Ad request updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'withdraw_ad':
         # Withdraw an ad request
         delete_ad_request(request.form['id'])
-        return redirect(url_for('sponsor_dashboard'))
+        return redirect(url_for('sponsor_dashboard', error="Ad request deleted successfully"))
         
 
 # Influencer dashboard, Allows influencers to view their ad requests and create new ad requests
@@ -267,19 +240,22 @@ def sponsor_dashboard():
 def influencer_dashboard():
     influencer = current_user
     # Get the influencer's ad requests
-    ad_requests = get_influencer_ad_requests(influencer.id)
-    for ad_request in ad_requests:
+    page = request.args.get('page', 1, type=int)
+    error = request.args.get('error', '')
+    ad_requests = get_influencer_ad_requests(influencer.id, page)
+    for ad_request in ad_requests.items:
         campaign = get_campaign(ad_request.campaign_id)
         ad_request.name = campaign.name
         ad_request.influencer_name = influencer.name
+    flag = get_flag(influencer.id, influencer.role)
     if request.method == 'GET':
         # Get the influencer dashboard
-        return render_template('influencer_dashboard.html', influencer=influencer, ad_requests=ad_requests, error="")
+        return render_template('influencer_dashboard.html', influencer=influencer, ad_requests=ad_requests, error="", flag=flag)
     elif request.method == 'POST' and request.form['form_id'] == 'edit_profile':
         # Update the influencer profile
         update_user(influencer.email, {"name": request.form.get('name'), "password": request.form.get('password'), "category": request.form.get('category'), 
                                        "reach": request.form.get('reach')})
-        return redirect(url_for('influencer_dashboard'))
+        return redirect(url_for('influencer_dashboard', error="Profile updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'revert_ad':
         # Accept or Reject an ad request and update the campaign budget
         ad_request = get_ad_request(request.form['id'])
@@ -288,14 +264,14 @@ def influencer_dashboard():
         if status == 'Accept' and not validate_budget(ad_request.payment_amount, ad_request.campaign_id):
             # If the payment amount exceeds the budget, delete the ad request
             delete_ad_request(ad_request.id)
-            return render_template('influencer_dashboard.html', influencer=influencer, ad_requests=ad_requests, error='Payment amount exceeds budget, deleting ad request')
+            return redirect(url_for("influencer_dashboard", error='Payment amount exceeds budget, deleting ad request'))
         update_ad_request(ad_request.id, {"status": status})
         if status == 'Accept': update_campaign(ad_request.campaign_id, {"remaining": ad_request.payment_amount})
-        return redirect(url_for('influencer_dashboard'))
+        return redirect(url_for('influencer_dashboard', error="Ad request updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'negotiate_ad':
         # Negotiate an ad request
         update_ad_request(request.form['id'], {"payment_amount": request.form['payment_amount'], "negotiate": True, "status": "Pending"})
-        return redirect(url_for('influencer_dashboard'))
+        return redirect(url_for('influencer_dashboard', error="Ad request updated successfully"))
 
 # Campaign page, Allows users to view the details of a campaign
 @app.route('/campaign/<id>', methods=['GET', 'POST'])
@@ -303,10 +279,12 @@ def influencer_dashboard():
 def campaign(id):
     user = current_user
     name = user.name
+    page = request.args.get('page', 1, type=int)
+    error = request.args.get('error', '')
     # Get the campaign details and ad requests
     campaign = get_campaign(id)
-    ad_requests = get_campaign_ad_requests(id)
-    for ad_request in ad_requests:
+    ad_requests = get_campaign_ad_requests([id], page)
+    for ad_request in ad_requests.items:
         if not ad_request.influencer_id:
             ad_request.influencer_name = "Not Assigned"
             ad_request.name = campaign.name
@@ -324,14 +302,14 @@ def campaign(id):
         payment_amount = request.form['payment_amount']
         # Check if the form is valid
         if not validate_ad_request(messages, requirements, payment_amount):
-            return render_template('campaign.html', type=user.role, name = name, campaign=campaign, ad_requests=ad_requests, error='Please fill all fields correctly')
+            return redirect(url_for('campaign', id = id, error='Please fill all fields correctly'))
         create_ad_request(messages, requirements, payment_amount, 'Pending', False, id)
         return redirect(url_for('campaign', id=id))
     elif request.method == 'POST' and request.form['form_id'] == 'send_request':
         # Send a request to an influencer only for Influencers
         payment_amount = request.form['payment_amount']
         update_ad_request(request.form['id'], {"payment_amount": payment_amount, "status": "Pending", "negotiate": True, "influencer_id": user.id})
-        return redirect(url_for('campaign', id=id))
+        return redirect(url_for('campaign', id=id, error="Ad request sent successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'revert_ad':
         # Accept or Reject an ad request only for Sponsors
         ad_request = get_ad_request(request.form['id'])
@@ -340,19 +318,19 @@ def campaign(id):
         if status == 'Accept' and not validate_budget(ad_request.payment_amount, ad_request.campaign_id):
             # If the payment amount exceeds the budget, delete the ad request
             delete_ad_request(ad_request.id)
-            return redirect(render_template('campaign.html', type=user.role, name = name, campaign=campaign, ad_requests=ad_requests, error='Payment amount exceeds budget, deleting ad request'))
+            return redirect(url_for('campaign', id=id, error='Payment amount exceeds budget, deleting ad request'))
         update_ad_request(ad_request, {"status": status})
         if status == 'Accept': update_campaign(ad_request.campaign_id, {"remaining": ad_request.payment_amount})
-        return redirect(url_for('campaign', id=id))
+        return redirect(url_for('campaign', id=id, error="Ad request updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'edit_ad':
         # Edit an ad request only for Sponsors
         update_ad_request(request.form['id'], {"messages": request.form['messages'], "requirements": request.form['requirements'], 
                                               "payment_amount": request.form['payment_amount']})
-        return redirect(url_for('campaign', id=id))
+        return redirect(url_for('campaign', id=id, error="Ad request updated successfully"))
     elif request.method == 'POST' and request.form['form_id'] == 'withdraw_ad':
         # Withdraw an ad request only for Sponsors
         delete_ad_request(request.form['id'])
-        return redirect(url_for('campaign', id=id))
+        return redirect(url_for('campaign', id=id, error="Ad request deleted successfully"))
 
 # Search page, Allows users to search for influencers and sponsors
 @app.route('/search/', methods=['GET', 'POST'])
@@ -362,12 +340,13 @@ def search():
     # Get the search page
     # Get the search results based on the user's role
     campaign = []
+    page = request.args.get('page', 1, type=int)
     if request.method == 'GET' and user.role == 'Influencer':
-        campaigns = search_campaign(None, None, None)
+        campaigns = search_campaign(None, None, None, page)
         return render_template('search.html', type=user.role, results=campaigns, campaign=campaign, id=user.id, error="")
     elif request.method == 'GET' and user.role == 'Sponsor':
-        influencers = search_user(None, None, None)
-        campaign = get_sponsor_campaigns(user.id)
+        influencers = search_user(None, None, None, page)
+        campaign = get_sponsor_campaigns(user.id, -1)
         return render_template('search.html', type=user.role, results=influencers, campaign=campaign, id=None, error="")
     elif request.method == 'POST' and request.form['form_id'] == 'search_name':
         # Search for influencers or campaigns
@@ -377,14 +356,14 @@ def search():
         niche = request.form.get('niche')
         if user.role == 'Sponsor':
             # Search for influencers
-            results = search_user(name, sort, category)
-            campaign = get_sponsor_campaigns(user.id)
+            results = search_user(name, sort, category, page)
+            campaign = get_sponsor_campaigns(user.id, -1)
         elif user.role == 'Influencer':
             # Search for campaigns
-            results = search_campaign(name, sort, niche)
+            results = search_campaign(name, sort, niche, page)
         return render_template('search.html', type=user.role, results=results, campaign=campaign, id=user.id, error="")
     elif request.method == 'POST' and request.form['form_id'] == 'ad_request':
-        results = search_user(None, None, None)
+        results = search_user(None, None, None, page)
         # Create a new ad request
         influencer_id = request.form.get('id')
         campaign_id = request.form['campaign_id']
@@ -393,16 +372,16 @@ def search():
         payment_amount = request.form['payment_amount']
         # Check if the form is valid
         if not validate_ad_request(messages, requirements, payment_amount):
-            return render_template('search.html', type=user.role, results=results, campaign=campaign, id=None, error='Please fill all fields correctly')
+            return redirect(url_for('search', error='Please fill all fields correctly'))
         create_ad_request(messages, requirements, payment_amount, 'Pending', False, campaign_id, influencer_id)
-        return redirect(url_for('search'))
+        return redirect(url_for('search', error="Ad request sent successfully"))
 
 @app.route('/logout')
 @login_required
 def logout():
     # Logout the user
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -56,7 +56,7 @@ class Campaign(db.Model):
 
 class Flagged(db.Model):
     __tablename__ = "flagged"
-    flagged_id = db.Column(db.Integer, primary_key=True, unique = True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, unique = True, nullable=False)
     type = db.Column(db.String, nullable=False)
     type_id = db.Column(db.Integer, nullable=False)
     reason = db.Column(db.String, nullable=False)

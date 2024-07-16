@@ -14,6 +14,12 @@
             {{ error }}
         </div>
         {% endif %}
+        {% if flag %}
+        <div class="alert alert-danger" role="alert">
+            You have been flagged, kindly make the below changes before your profile can be activated again.<br>
+            Reason: {{ flag.reason }}
+        </div>
+        {% endif %}
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <a class="navbar-brand" href="#">Welcome {{ sponsor.name }}</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +38,11 @@
                     <a class="nav-link" href="#Ad_Requests">Ad Requests</a>
                 </li>
                 <li class="nav-item">
+                    {% if flag %}
+                    <a class="nav-link" disabled>Find Influencers</a>
+                    {% else %}
                     <a class="nav-link" href="{{ url_for('search') }}">Find Influencers</a>
+                    {% endif %}
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
@@ -46,6 +56,8 @@
             <h1>Welcome, {{ sponsor.name }}</h1>
             <p>Industry: {{ sponsor.industry }}</p>
             <p>Email: {{ sponsor.email }}</p>
+            <p>Total Campaign created: {{ campaigns.total }}</p>
+            <p>Total Ad Requests created: {{ ad_requests.total }}</p>
             <!-- Edit Profile modal -->
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                 Edit Profile
@@ -69,50 +81,51 @@
 
                             <!-- Industry input -->
                             <div data-mdb-input-init class="form-outline mb-4">
-                                <select id="Industry" name="industry" class="form-control" value="{{ sponsor.industry }}">
-                                    <option value="technology">Technology</option>
-                                    <option value="finance">Finance</option>
-                                    <option value="healthcare">Healthcare</option>
-                                    <option value="education">Education</option>
-                                    <option value="manufacturing">Manufacturing</option>
-                                    <option value="retail">Retail</option>
-                                    <option value="real-estate">Real Estate</option>
-                                    <option value="entertainment">Entertainment</option>
-                                    <option value="transportation">Transportation</option>
-                                    <option value="agriculture">Agriculture</option>
-                                    <option value="automotive">Automotive</option>
-                                    <option value="construction">Construction</option>
-                                    <option value="energy">Energy</option>
-                                    <option value="food-and-beverage">Food and Beverage</option>
-                                    <option value="hospitality">Hospitality</option>
-                                    <option value="insurance">Insurance</option>
-                                    <option value="media">Media</option>
-                                    <option value="pharmaceuticals">Pharmaceuticals</option>
-                                    <option value="professional-services">Professional Services</option>
-                                    <option value="public-sector">Public Sector</option>
-                                    <option value="telecommunications">Telecommunications</option>
-                                    <option value="utilities">Utilities</option>
-                                    <option value="logistics">Logistics</option>
-                                    <option value="mining">Mining</option>
-                                    <option value="non-profit">Non-Profit</option>
-                                    <option value="aerospace">Aerospace</option>
-                                    <option value="biotechnology">Biotechnology</option>
-                                    <option value="chemicals">Chemicals</option>
-                                    <option value="consulting">Consulting</option>
-                                    <option value="defense">Defense</option>
-                                    <option value="fashion">Fashion</option>
-                                    <option value="furniture">Furniture</option>
-                                    <option value="human-resources">Human Resources</option>
-                                    <option value="legal">Legal</option>
-                                    <option value="luxury-goods">Luxury Goods</option>
-                                    <option value="packaging">Packaging</option>
-                                    <option value="publishing">Publishing</option>
-                                    <option value="recreation">Recreation</option>
-                                    <option value="security">Security</option>
-                                    <option value="sports">Sports</option>
-                                    <option value="tourism">Tourism</option>
-                                    <option value="waste-management">Waste Management</option>
-                                    <option value="wholesale">Wholesale</option>
+                                <select id="Industry" name="industry" class="form-control">
+                                    <option value="{{ sponsor.industry }}" disabled select>{{ sponsor.industry }}</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Manufacturing">Manufacturing</option>
+                                    <option value="Retail">Retail</option>
+                                    <option value="Real-Estate">Real Estate</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Transportation">Transportation</option>
+                                    <option value="Agriculture">Agriculture</option>
+                                    <option value="Automotive">Automotive</option>
+                                    <option value="Construction">Construction</option>
+                                    <option value="Energy">Energy</option>
+                                    <option value="Food-and-Beverage">Food and Beverage</option>
+                                    <option value="Hospitality">Hospitality</option>
+                                    <option value="Insurance">Insurance</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Pharmaceuticals">Pharmaceuticals</option>
+                                    <option value="Professional-Services">Professional Services</option>
+                                    <option value="Public-Sector">Public Sector</option>
+                                    <option value="Telecommunications">Telecommunications</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Logistics">Logistics</option>
+                                    <option value="Mining">Mining</option>
+                                    <option value="Non-Profit">Non-Profit</option>
+                                    <option value="Aerospace">Aerospace</option>
+                                    <option value="Biotechnology">Biotechnology</option>
+                                    <option value="Chemicals">Chemicals</option>
+                                    <option value="Consulting">Consulting</option>
+                                    <option value="Defense">Defense</option>
+                                    <option value="Fashion">Fashion</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Human-Resources">Human Resources</option>
+                                    <option value="Legal">Legal</option>
+                                    <option value="Luxury-Goods">Luxury Goods</option>
+                                    <option value="Packaging">Packaging</option>
+                                    <option value="Publishing">Publishing</option>
+                                    <option value="Recreation">Recreation</option>
+                                    <option value="Security">Security</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Tourism">Tourism</option>
+                                    <option value="Waste-Management">Waste Management</option>
+                                    <option value="Wholesale">Wholesale</option>
                                 </select>
                                 <label class="form-label" for="Industry">Industry</label>
                             </div>
@@ -132,7 +145,7 @@
                 </div>
             </div>
         </div>
-
+        {% if not flag %}
         <!-- Campaigns Page -->
         <div id="Campaigns">
             <h2>Published Campaigns</h2>
@@ -170,72 +183,72 @@
                             <!-- Niche input -->
                             <div data-mdb-input-init class="form-outline mb-4">
                                 <select id="niche" name="niche" required>
-                                    <option value="{{ None }}">None</option>
-                                    <option value="beauty">Beauty</option>
-                                    <option value="fashion">Fashion</option>
-                                    <option value="fitness">Fitness</option>
-                                    <option value="health">Health</option>
-                                    <option value="travel">Travel</option>
-                                    <option value="food">Food</option>
-                                    <option value="lifestyle">Lifestyle</option>
-                                    <option value="gaming">Gaming</option>
-                                    <option value="technology">Technology</option>
-                                    <option value="photography">Photography</option>
-                                    <option value="music">Music</option>
-                                    <option value="parenting">Parenting</option>
-                                    <option value="finance">Finance</option>
-                                    <option value="education">Education</option>
-                                    <option value="sports">Sports</option>
-                                    <option value="art">Art</option>
-                                    <option value="home-decor">Home Decor</option>
-                                    <option value="pets">Pets</option>
-                                    <option value="automotive">Automotive</option>
-                                    <option value="books">Books</option>
-                                    <option value="diy">DIY</option>
-                                    <option value="environment">Environment</option>
-                                    <option value="entertainment">Entertainment</option>
-                                    <option value="business">Business</option>
-                                    <option value="spirituality">Spirituality</option>
-                                    <option value="dating">Dating</option>
-                                    <option value="career">Career</option>
-                                    <option value="event-planning">Event Planning</option>
-                                    <option value="gaming-cosplay">Gaming Cosplay</option>
-                                    <option value="luxury">Luxury</option>
-                                    <option value="outdoors">Outdoors</option>
-                                    <option value="wellness">Wellness</option>
-                                    <option value="mental-health">Mental Health</option>
-                                    <option value="non-profit">Non-Profit</option>
-                                    <option value="comedy">Comedy</option>
-                                    <option value="news">News</option>
-                                    <option value="personal-development">Personal Development</option>
-                                    <option value="relationship">Relationship</option>
-                                    <option value="social-justice">Social Justice</option>
-                                    <option value="sustainable-living">Sustainable Living</option>
-                                    <option value="tech-gadgets">Tech Gadgets</option>
-                                    <option value="videography">Videography</option>
-                                    <option value="yoga">Yoga</option>
-                                    <option value="crypto">Crypto</option>
-                                    <option value="investment">Investment</option>
-                                    <option value="real-estate">Real Estate</option>
-                                    <option value="home-improvement">Home Improvement</option>
-                                    <option value="mobile-apps">Mobile Apps</option>
-                                    <option value="e-commerce">E-commerce</option>
-                                    <option value="product-reviews">Product Reviews</option>
-                                    <option value="podcasts">Podcasts</option>
-                                    <option value="tech-reviews">Tech Reviews</option>
-                                    <option value="web-development">Web Development</option>
-                                    <option value="marketing">Marketing</option>
-                                    <option value="consulting">Consulting</option>
-                                    <option value="freelancing">Freelancing</option>
-                                    <option value="startup">Startup</option>
-                                    <option value="adventure">Adventure</option>
-                                    <option value="crafts">Crafts</option>
-                                    <option value="vlogging">Vlogging</option>
-                                    <option value="nutrition">Nutrition</option>
-                                    <option value="alternative-medicine">Alternative Medicine</option>
-                                    <option value="gardening">Gardening</option>
-                                    <option value="personal-finance">Personal Finance</option>
-                                    <option value="self-care">Self-Care</option>
+                                    <option disabled select>Select a Niche</option>
+                                    <option value="Beauty">Beauty</option>
+                                    <option value="Fashion">Fashion</option>
+                                    <option value="Fitness">Fitness</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Lifestyle">Lifestyle</option>
+                                    <option value="Gaming">Gaming</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Photography">Photography</option>
+                                    <option value="Music">Music</option>
+                                    <option value="Parenting">Parenting</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Art">Art</option>
+                                    <option value="Home-Decor">Home Decor</option>
+                                    <option value="Pets">Pets</option>
+                                    <option value="Automotive">Automotive</option>
+                                    <option value="Books">Books</option>
+                                    <option value="DIY">DIY</option>
+                                    <option value="Environment">Environment</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Spirituality">Spirituality</option>
+                                    <option value="Dating">Dating</option>
+                                    <option value="Career">Career</option>
+                                    <option value="Event-Planning">Event Planning</option>
+                                    <option value="Gaming-Cosplay">Gaming Cosplay</option>
+                                    <option value="Luxury">Luxury</option>
+                                    <option value="Outdoors">Outdoors</option>
+                                    <option value="Wellness">Wellness</option>
+                                    <option value="Mental-Health">Mental Health</option>
+                                    <option value="Non-Profit">Non-Profit</option>
+                                    <option value="Comedy">Comedy</option>
+                                    <option value="News">News</option>
+                                    <option value="Personal-Development">Personal Development</option>
+                                    <option value="Relationship">Relationship</option>
+                                    <option value="Social-Justice">Social Justice</option>
+                                    <option value="Sustainable-Living">Sustainable Living</option>
+                                    <option value="Tech-Gadgets">Tech Gadgets</option>
+                                    <option value="Videography">Videography</option>
+                                    <option value="Yoga">Yoga</option>
+                                    <option value="Crypto">Crypto</option>
+                                    <option value="Investment">Investment</option>
+                                    <option value="Real-Estate">Real Estate</option>
+                                    <option value="Home-Improvement">Home Improvement</option>
+                                    <option value="Mobile-Apps">Mobile Apps</option>
+                                    <option value="E-commerce">E-commerce</option>
+                                    <option value="Product-Reviews">Product Reviews</option>
+                                    <option value="Podcasts">Podcasts</option>
+                                    <option value="Tech-Reviews">Tech Reviews</option>
+                                    <option value="Web-Development">Web Development</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Consulting">Consulting</option>
+                                    <option value="Freelancing">Freelancing</option>
+                                    <option value="Startup">Startup</option>
+                                    <option value="Adventure">Adventure</option>
+                                    <option value="Crafts">Crafts</option>
+                                    <option value="Vlogging">Vlogging</option>
+                                    <option value="Nutrition">Nutrition</option>
+                                    <option value="Alternative-Medicine">Alternative Medicine</option>
+                                    <option value="Gardening">Gardening</option>
+                                    <option value="Personal-Finance">Personal Finance</option>
+                                    <option value="Self-Care">Self-Care</option>
                                 </select>
                                 <label class="form-label" for="niche">Niche</label>
                             </div>
@@ -276,10 +289,10 @@
                 </div>
                 </div>
             </div><br>
-            {% if campaigns | length == 0 %}
+            {% if campaigns.items | length == 0 %}
                 <p>No campaigns published yet.</p>
             {% endif %}
-            {% for campaign in campaigns %}
+            {% for campaign in campaigns.items %}
                 <br>
                 <a href="{{ url_for('campaign', id=campaign.id) }}", style="color: black;text-decoration: none;">
                     <div class="card">
@@ -339,72 +352,73 @@
 
                                 <!-- Niche input -->
                                 <div data-mdb-input-init class="form-outline mb-4">
-                                    <select id="niche" name="niche" required>
-                                        <option value="beauty">Beauty</option>
-                                        <option value="fashion">Fashion</option>
-                                        <option value="fitness">Fitness</option>
-                                        <option value="health">Health</option>
-                                        <option value="travel">Travel</option>
-                                        <option value="food">Food</option>
-                                        <option value="lifestyle">Lifestyle</option>
-                                        <option value="gaming">Gaming</option>
-                                        <option value="technology">Technology</option>
-                                        <option value="photography">Photography</option>
-                                        <option value="music">Music</option>
-                                        <option value="parenting">Parenting</option>
-                                        <option value="finance">Finance</option>
-                                        <option value="education">Education</option>
-                                        <option value="sports">Sports</option>
-                                        <option value="art">Art</option>
-                                        <option value="home-decor">Home Decor</option>
-                                        <option value="pets">Pets</option>
-                                        <option value="automotive">Automotive</option>
-                                        <option value="books">Books</option>
-                                        <option value="diy">DIY</option>
-                                        <option value="environment">Environment</option>
-                                        <option value="entertainment">Entertainment</option>
-                                        <option value="business">Business</option>
-                                        <option value="spirituality">Spirituality</option>
-                                        <option value="dating">Dating</option>
-                                        <option value="career">Career</option>
-                                        <option value="event-planning">Event Planning</option>
-                                        <option value="gaming-cosplay">Gaming Cosplay</option>
-                                        <option value="luxury">Luxury</option>
-                                        <option value="outdoors">Outdoors</option>
-                                        <option value="wellness">Wellness</option>
-                                        <option value="mental-health">Mental Health</option>
-                                        <option value="non-profit">Non-Profit</option>
-                                        <option value="comedy">Comedy</option>
-                                        <option value="news">News</option>
-                                        <option value="personal-development">Personal Development</option>
-                                        <option value="relationship">Relationship</option>
-                                        <option value="social-justice">Social Justice</option>
-                                        <option value="sustainable-living">Sustainable Living</option>
-                                        <option value="tech-gadgets">Tech Gadgets</option>
-                                        <option value="videography">Videography</option>
-                                        <option value="yoga">Yoga</option>
-                                        <option value="crypto">Crypto</option>
-                                        <option value="investment">Investment</option>
-                                        <option value="real-estate">Real Estate</option>
-                                        <option value="home-improvement">Home Improvement</option>
-                                        <option value="mobile-apps">Mobile Apps</option>
-                                        <option value="e-commerce">E-commerce</option>
-                                        <option value="product-reviews">Product Reviews</option>
-                                        <option value="podcasts">Podcasts</option>
-                                        <option value="tech-reviews">Tech Reviews</option>
-                                        <option value="web-development">Web Development</option>
-                                        <option value="marketing">Marketing</option>
-                                        <option value="consulting">Consulting</option>
-                                        <option value="freelancing">Freelancing</option>
-                                        <option value="startup">Startup</option>
-                                        <option value="adventure">Adventure</option>
-                                        <option value="crafts">Crafts</option>
-                                        <option value="vlogging">Vlogging</option>
-                                        <option value="nutrition">Nutrition</option>
-                                        <option value="alternative-medicine">Alternative Medicine</option>
-                                        <option value="gardening">Gardening</option>
-                                        <option value="personal-finance">Personal Finance</option>
-                                        <option value="self-care">Self-Care</option>
+                                    <select id="niche" name="niche">
+                                        <option value="{{ campaign.niche }}" disabled select>{{ campaign.niche }}</option>
+                                        <option value="Beauty">Beauty</option>
+                                        <option value="Fashion">Fashion</option>
+                                        <option value="Fitness">Fitness</option>
+                                        <option value="Health">Health</option>
+                                        <option value="Travel">Travel</option>
+                                        <option value="Food">Food</option>
+                                        <option value="Lifestyle">Lifestyle</option>
+                                        <option value="Gaming">Gaming</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Photography">Photography</option>
+                                        <option value="Music">Music</option>
+                                        <option value="Parenting">Parenting</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Education">Education</option>
+                                        <option value="Sports">Sports</option>
+                                        <option value="Art">Art</option>
+                                        <option value="Home-Decor">Home Decor</option>
+                                        <option value="Pets">Pets</option>
+                                        <option value="Automotive">Automotive</option>
+                                        <option value="Books">Books</option>
+                                        <option value="DIY">DIY</option>
+                                        <option value="Environment">Environment</option>
+                                        <option value="Entertainment">Entertainment</option>
+                                        <option value="Business">Business</option>
+                                        <option value="Spirituality">Spirituality</option>
+                                        <option value="Dating">Dating</option>
+                                        <option value="Career">Career</option>
+                                        <option value="Event-Planning">Event Planning</option>
+                                        <option value="Gaming-Cosplay">Gaming Cosplay</option>
+                                        <option value="Luxury">Luxury</option>
+                                        <option value="Outdoors">Outdoors</option>
+                                        <option value="Wellness">Wellness</option>
+                                        <option value="Mental-Health">Mental Health</option>
+                                        <option value="Non-Profit">Non-Profit</option>
+                                        <option value="Comedy">Comedy</option>
+                                        <option value="News">News</option>
+                                        <option value="Personal-Development">Personal Development</option>
+                                        <option value="Relationship">Relationship</option>
+                                        <option value="Social-Justice">Social Justice</option>
+                                        <option value="Sustainable-Living">Sustainable Living</option>
+                                        <option value="Tech-Gadgets">Tech Gadgets</option>
+                                        <option value="Videography">Videography</option>
+                                        <option value="Yoga">Yoga</option>
+                                        <option value="Crypto">Crypto</option>
+                                        <option value="Investment">Investment</option>
+                                        <option value="Real-Estate">Real Estate</option>
+                                        <option value="Home-Improvement">Home Improvement</option>
+                                        <option value="Mobile-Apps">Mobile Apps</option>
+                                        <option value="E-commerce">E-commerce</option>
+                                        <option value="Product-Reviews">Product Reviews</option>
+                                        <option value="Podcasts">Podcasts</option>
+                                        <option value="Tech-Reviews">Tech Reviews</option>
+                                        <option value="Web-Development">Web Development</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Consulting">Consulting</option>
+                                        <option value="Freelancing">Freelancing</option>
+                                        <option value="Startup">Startup</option>
+                                        <option value="Adventure">Adventure</option>
+                                        <option value="Crafts">Crafts</option>
+                                        <option value="Vlogging">Vlogging</option>
+                                        <option value="Nutrition">Nutrition</option>
+                                        <option value="Alternative-Medicine">Alternative Medicine</option>
+                                        <option value="Gardening">Gardening</option>
+                                        <option value="Personal-Finance">Personal Finance</option>
+                                        <option value="Self-Care">Self-Care</option>
                                     </select>
                                     <label class="form-label" for="niche">Niche</label>
                                 </div>
@@ -470,15 +484,62 @@
                     </div>
                 </div>
             {% endfor %}
+            <!-- Navigation section for pagination controls -->
+            <nav aria-label="Sponsor Page navigation">
+                <ul class="pagination">
+                    <!-- Check if there is a previous page -->
+                    {% if campaigns.has_prev %}
+                    <li class="page-item">
+                        <!-- If there is, create a link to the previous page -->
+                        <a class="page-link" href="/sponsor?page_sponsor={{ campaigns.prev_num }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <!-- If not, show a disabled 'Previous' button -->
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    <!-- Loop through each page number provided by pagination.iter_pages() -->
+                    {% for page_num in campaigns.iter_pages() %}
+                    <!-- Check if the page number exists (not None) -->
+                    {% if page_num %}
+                    <!-- Check if the current page is not the active page -->
+                    {% if page_num != campaigns.page %}
+                    <!-- Create a clickable link for the page number -->
+                    <li class="page-item"><a class="page-link" href="/sponsor?page_sponsor={{ page_num }}">{{ page_num }}</a></li>
+                    {% else %}
+                    <!-- Highlight the current page as active and not clickable -->
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <!-- For gaps in the pagination links, show ellipsis -->
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Check if there is a next page -->
+                    {% if campaigns.has_next %}
+                    <li class="page-item">
+                        <!-- If there is, create a link to the next page -->
+                        <a class="page-link" href="/sponsor?page_sponsor={{ campaigns.next_num }}">Next</a>
+                    </li>
+                    {% else %}
+                    <!-- If not, show a disabled 'Next' button -->
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
 
         <!-- Ad Requests Page -->
         <div id="Ad_Requests">
             <h2>Ad Requests</h2>
-            {% if ad_requests | length == 0 %}
+            {% if ad_requests.items | length == 0 %}
                 <p>No Ad Requests sent yet.</p>
             {% endif %}
-            {% for ad_request in ad_requests %}
+            {% for ad_request in ad_requests.items %}
+            <br>
                 <div class="card">
                     <div class="card-header">
                         {{ ad_request.name }}
@@ -594,7 +655,54 @@
                     </div>
                 </div>
             {% endfor %}
+            <!-- Navigation section for pagination controls -->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <!-- Check if there is a previous page -->
+                    {% if ad_requests.has_prev %}
+                    <li class="page-item">
+                        <!-- If there is, create a link to the previous page -->
+                        <a class="page-link" href="/sponsor?page_ad_request={{ ad_requests.prev_num }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <!-- If not, show a disabled 'Previous' button -->
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    <!-- Loop through each page number provided by pagination.iter_pages() -->
+                    {% for page_num in ad_requests.iter_pages() %}
+                    <!-- Check if the page number exists (not None) -->
+                    {% if page_num %}
+                    <!-- Check if the current page is not the active page -->
+                    {% if page_num != ad_requests.page %}
+                    <!-- Create a clickable link for the page number -->
+                    <li class="page-item"><a class="page-link" href="/sponsor?page_ad_request={{ page_num }}">{{ page_num }}</a></li>
+                    {% else %}
+                    <!-- Highlight the current page as active and not clickable -->
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <!-- For gaps in the pagination links, show ellipsis -->
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Check if there is a next page -->
+                    {% if ad_requests.has_next %}
+                    <li class="page-item">
+                        <!-- If there is, create a link to the next page -->
+                        <a class="page-link" href="/sponsor?page_ad_request={{ ad_requests.next_num }}">Next</a>
+                    </li>
+                    {% else %}
+                    <!-- If not, show a disabled 'Next' button -->
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
+        {% endif %}
         
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </body>

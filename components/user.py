@@ -46,19 +46,34 @@ def update_user(email, params):
     db.session.commit()
     return user
 
-def search_user(name, reach, category):
+def delete_user(email):
+    # Delete user
+    user = get_user(email)
+    db.session.delete(user)
+    db.session.commit()
+    return user
+
+def get_users(page):
+    # Get all users
+    if page == -1:
+        users = User.query.filter(User.role.in_(["Sponsor", "Influencer"])).all()
+        return users
+    users = User.query.filter(User.role.in_(["Sponsor", "Influencer"])).paginate(page=page, per_page=5, error_out=False)
+    return users
+
+def search_user(name, reach, category, page):
     # Search via name
     if name:
-        users = User.query.filter(User.name.like('%' + name + '%')).filter_by(role="Influencer").all()
+        users = User.query.filter(User.name.like('%' + name + '%')).filter_by(role="Influencer").paginate(page=page, per_page=10, error_out=False)
     else:
-        users = User.query.filter_by(role="Influencer").all()
+        users = User.query.filter_by(role="Influencer").paginate(page=page, per_page=5, error_out=False)
     # Only send requested categories
     if category:
-        users = [user for user in users if user.category in category]
+        users.items = [user for user in users.items if user.category in category]
     # Sort based on reach
     if reach == "Low":
-        users = sorted(users, key=lambda x: x.reach, reverse=True)
+        users.items = sorted(users.items, key=lambda x: x.reach, reverse=True)
     elif reach == "High":
-        users = sorted(users, key=lambda x: x.reach)
+        users.items = sorted(users.items, key=lambda x: x.reach)
     return users
         

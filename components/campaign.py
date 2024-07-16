@@ -37,6 +37,8 @@ def update_campaign(campaign_id, params):
         if not params[key]: continue
         if key == "budget" and params[key] != campaign.budget:
             campaign.remaining = params[key] - (campaign.budget - campaign.remaining)
+        if key == "remaining":
+            campaign.remaining = campaign.remaining - params[key]
         setattr(campaign, key, params[key])
     db.session.commit()
     return campaign
@@ -48,28 +50,39 @@ def delete_campaign(campaign_id):
     db.session.commit()
     return campaign
 
-def get_sponsor_campaigns(sponsor_id):
-    # Get campaigns associated with sponsor
-    campaigns = Campaign.query.filter_by(sponsor_id=sponsor_id).all()
+def get_campaigns(page):
+    # Get all campaigns
+    if page == -1:
+        campaigns = Campaign.query.all()
+        return campaigns
+    campaigns = Campaign.query.paginate(page=page, per_page=10, error_out=False)
     return campaigns
 
-def search_campaign(name, budget, niche):
+def get_sponsor_campaigns(sponsor_id, page):
+    # Get campaigns associated with sponsor
+    if page == -1:
+        campaigns = Campaign.query.filter_by(sponsor_id=sponsor_id)
+        return campaigns
+    campaigns = Campaign.query.filter_by(sponsor_id=sponsor_id).paginate(page=page, per_page=5, error_out=False)
+    return campaigns
+
+def search_campaign(name, budget, niche, page):
     # Search via name
     if name:
-        campaigns = Campaign.query.filter(Campaign.name.like('%' + name + '%')).filter_by(visibility="Public").all()
+        campaigns = Campaign.query.filter(Campaign.name.like('%' + name + '%')).filter_by(visibility="Public").paginate(page=page, per_page=10, error_out=False)
     else:
-        campaigns = Campaign.query.filter_by(visibility="Public").all()
+        campaigns = Campaign.query.filter_by(visibility="Public").paginate(page=page, per_page=5, error_out=False)
     # Make sure end_date has not passed
     today = date.today()
-    campaigns = [campaign for campaign in campaigns if campaign.end_date >= today]
+    campaigns.items = [campaign for campaign in campaigns.items if campaign.end_date >= today]
     # Always sort based on end date
-    campaigns = sorted(campaigns, key=lambda x: x.end_date)
+    campaigns.items = sorted(campaigns.items, key=lambda x: x.end_date)
     # Filter based on niche
     if niche:
-        campaigns = [campaign for campaign in campaigns if campaign.niche == niche]
+        campaigns.items = [campaign for campaign in campaigns.items if campaign.niche == niche]
     # Sort based on budget
     if budget == "Low":
-        campaigns = sorted(campaigns, key=lambda x: x.budget, reverse=True)
+        campaigns.items = sorted(campaigns.items, key=lambda x: x.budget, reverse=True)
     elif budget == "High":
-        campaigns = sorted(campaigns, key=lambda x: x.budget)
+        campaigns.items = sorted(campaigns.items, key=lambda x: x.budget)
     return campaigns

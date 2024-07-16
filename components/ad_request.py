@@ -38,12 +38,26 @@ def delete_ad_request(ad_request_id):
     db.session.commit()
     return ad_request
 
-def get_campaign_ad_requests(campaign_id):
-    # Get ad requests associated with campaign
-    ad_requests = Ad_request.query.filter_by(campaign_id=campaign_id).all()
+def get_ad_requests(page):
+    # Get all ad requests
+    if page == -1:
+        ad_requests = Ad_request.query.all()
+        return ad_requests
+    ad_requests = Ad_request.query.paginate(page=page, per_page=5, error_out=False)
     return ad_requests
 
-def get_influencer_ad_requests(influencer_id):
+def get_campaign_ad_requests(campaign_id, page):
+    # Get ad requests associated with campaign
+    if page == -1:
+        ad_requests = Ad_request.query.filter_by(campaign_id=campaign_id)
+        return ad_requests
+    ad_requests = Ad_request.query.filter(Ad_request.campaign_id.in_(campaign_id)).paginate(page=page, per_page=5, error_out=False)
+    return ad_requests
+
+def get_influencer_ad_requests(influencer_id, page):
     # Get ad requests associated with influencer
-    ad_requests = Ad_request.query.filter_by(influencer_id=influencer_id).all()
+    if page == -1:
+        ad_requests = Ad_request.query.filter_by(influencer_id=influencer_id)
+        return ad_requests
+    ad_requests = Ad_request.query.filter_by(influencer_id=influencer_id).paginate(page=page, per_page=5, error_out=False)
     return ad_requests
