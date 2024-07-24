@@ -4,7 +4,8 @@
         <title>Search</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     </head>
-    <body>
+    <body style="margin-top:56px">
+        <!-- Error message display -->
         {% if "success" in error %}
         <div class="alert alert-success" role="alert">
             {{ error }}
@@ -14,7 +15,7 @@
             {{ error }}
         </div>
         {% endif %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
             <a class="navbar-brand" href="#">Search</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
@@ -37,153 +38,94 @@
               </ul>
               <form class="d-flex mr-auto" method="POST">
                 <input type="hidden" name="form_id" value="search_name">
-                <input class="form-control me-2" type="search" name="search" placeholder="Search" aria-label="Search" style="width:200px">
+                <input class="form-control me-2" type="search" name="search" value="{{ filter_dic.name }}" placeholder="Search" aria-label="Search" style="width:200px">
                 <select class="form-select me-2" name="sort" id="sort" aria-label="Sort" style="width:150px">
-                    <option value="{{ None }}" select>None</option>
-                    <option value="High">Ascending</option>
-                    <option value="Low">Descending</option>
+                    <option value="{{ None }}"disabled selected>Sort</option>
+                    <option value="Ascending">Ascending</option>
+                    <option value="Descending">Descending</option>
                 </select>
-                {% if type == "Sponsor" %}
                 <label for="Search_Type" style="width:120px; align-content: center;">Sort By Reach</label>
                 <select id="category" name="category" class="form-select me-2" style="width:200px">
-                    <option value="{{ None }}" disable select>Filter by Categories</option>
-                    <option value="beauty">Beauty</option>
-                    <option value="fashion">Fashion</option>
-                    <option value="fitness">Fitness</option>
-                    <option value="health">Health</option>
-                    <option value="travel">Travel</option>
-                    <option value="food">Food</option>
-                    <option value="lifestyle">Lifestyle</option>
-                    <option value="gaming">Gaming</option>
-                    <option value="technology">Technology</option>
-                    <option value="photography">Photography</option>
-                    <option value="music">Music</option>
-                    <option value="parenting">Parenting</option>
-                    <option value="finance">Finance</option>
-                    <option value="education">Education</option>
-                    <option value="sports">Sports</option>
-                    <option value="art">Art</option>
-                    <option value="home-decor">Home Decor</option>
-                    <option value="pets">Pets</option>
-                    <option value="automotive">Automotive</option>
-                    <option value="books">Books</option>
-                    <option value="diy">DIY</option>
-                    <option value="environment">Environment</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="business">Business</option>
-                    <option value="spirituality">Spirituality</option>
-                    <option value="dating">Dating</option>
-                    <option value="career">Career</option>
-                    <option value="event-planning">Event Planning</option>
-                    <option value="gaming-cosplay">Gaming Cosplay</option>
-                    <option value="luxury">Luxury</option>
-                    <option value="outdoors">Outdoors</option>
-                    <option value="wellness">Wellness</option>
-                    <option value="mental-health">Mental Health</option>
-                    <option value="non-profit">Non-Profit</option>
-                    <option value="comedy">Comedy</option>
-                    <option value="news">News</option>
-                    <option value="personal-development">Personal Development</option>
-                    <option value="relationship">Relationship</option>
-                    <option value="social-justice">Social Justice</option>
-                    <option value="sustainable-living">Sustainable Living</option>
-                    <option value="tech-gadgets">Tech Gadgets</option>
-                    <option value="videography">Videography</option>
-                    <option value="yoga">Yoga</option>
-                    <option value="crypto">Crypto</option>
-                    <option value="investment">Investment</option>
-                    <option value="real-estate">Real Estate</option>
+                    <option value="{{ None }}" disabled selected>Filter By Categories</option>
+                    <option value="Beauty">Beauty</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="Health">Health</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Food">Food</option>
+                    <option value="Lifestyle">Lifestyle</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Music">Music</option>
+                    <option value="Parenting">Parenting</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Education">Education</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Art">Art</option>
+                    <option value="Home-Decor">Home Decor</option>
+                    <option value="Pets">Pets</option>
+                    <option value="Automotive">Automotive</option>
+                    <option value="Books">Books</option>
+                    <option value="DIY">DIY</option>
+                    <option value="Environment">Environment</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Business">Business</option>
+                    <option value="Spirituality">Spirituality</option>
+                    <option value="Dating">Dating</option>
+                    <option value="Career">Career</option>
+                    <option value="Event-Planning">Event Planning</option>
+                    <option value="Gaming-Cosplay">Gaming Cosplay</option>
+                    <option value="Luxury">Luxury</option>
+                    <option value="Outdoors">Outdoors</option>
+                    <option value="Wellness">Wellness</option>
+                    <option value="Mental-Health">Mental Health</option>
+                    <option value="Non-Profit">Non-Profit</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="News">News</option>
+                    <option value="Personal-Development">Personal Development</option>
+                    <option value="Relationship">Relationship</option>
+                    <option value="Social-Justice">Social Justice</option>
+                    <option value="Sustainable-Living">Sustainable Living</option>
+                    <option value="Tech-Gadgets">Tech Gadgets</option>
+                    <option value="Videography">Videography</option>
+                    <option value="Yoga">Yoga</option>
+                    <option value="Crypto">Crypto</option>
+                    <option value="Investment">Investment</option>
+                    <option value="Real-Estate">Real Estate</option>
                 </select>
                 <label for="category" style="width:100px; align-content: center;">Category</label>
-                {% elif type == "Influencer" %}
-                <label for="Search_Type" style="width:120px; align-content: center;">Sort By Budget</label>
-                <select id="niche" name="niche" class="form-select me-2" style="width:200px">
-                    <option value="{{ None }}">None</option>
-                    <option value="beauty">Beauty</option>
-                    <option value="fashion">Fashion</option>
-                    <option value="fitness">Fitness</option>
-                    <option value="health">Health</option>
-                    <option value="travel">Travel</option>
-                    <option value="food">Food</option>
-                    <option value="lifestyle">Lifestyle</option>
-                    <option value="gaming">Gaming</option>
-                    <option value="technology">Technology</option>
-                    <option value="photography">Photography</option>
-                    <option value="music">Music</option>
-                    <option value="parenting">Parenting</option>
-                    <option value="finance">Finance</option>
-                    <option value="education">Education</option>
-                    <option value="sports">Sports</option>
-                    <option value="art">Art</option>
-                    <option value="home-decor">Home Decor</option>
-                    <option value="pets">Pets</option>
-                    <option value="automotive">Automotive</option>
-                    <option value="books">Books</option>
-                    <option value="diy">DIY</option>
-                    <option value="environment">Environment</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="business">Business</option>
-                    <option value="spirituality">Spirituality</option>
-                    <option value="dating">Dating</option>
-                    <option value="career">Career</option>
-                    <option value="event-planning">Event Planning</option>
-                    <option value="gaming-cosplay">Gaming Cosplay</option>
-                    <option value="luxury">Luxury</option>
-                    <option value="outdoors">Outdoors</option>
-                    <option value="wellness">Wellness</option>
-                    <option value="mental-health">Mental Health</option>
-                    <option value="non-profit">Non-Profit</option>
-                    <option value="comedy">Comedy</option>
-                    <option value="news">News</option>
-                    <option value="personal-development">Personal Development</option>
-                    <option value="relationship">Relationship</option>
-                    <option value="social-justice">Social Justice</option>
-                    <option value="sustainable-living">Sustainable Living</option>
-                    <option value="tech-gadgets">Tech Gadgets</option>
-                    <option value="videography">Videography</option>
-                    <option value="yoga">Yoga</option>
-                    <option value="crypto">Crypto</option>
-                    <option value="investment">Investment</option>
-                    <option value="real-estate">Real Estate</option>
-                    <option value="home-improvement">Home Improvement</option>
-                    <option value="mobile-apps">Mobile Apps</option>
-                    <option value="e-commerce">E-commerce</option>
-                    <option value="product-reviews">Product Reviews</option>
-                    <option value="podcasts">Podcasts</option>
-                    <option value="tech-reviews">Tech Reviews</option>
-                    <option value="web-development">Web Development</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="consulting">Consulting</option>
-                    <option value="freelancing">Freelancing</option>
-                    <option value="startup">Startup</option>
-                    <option value="adventure">Adventure</option>
-                    <option value="crafts">Crafts</option>
-                    <option value="vlogging">Vlogging</option>
-                    <option value="nutrition">Nutrition</option>
-                    <option value="alternative-medicine">Alternative Medicine</option>
-                    <option value="gardening">Gardening</option>
-                    <option value="personal-finance">Personal Finance</option>
-                    <option value="self-care">Self-Care</option>
-                </select>
-                <label for="niche" style="width:100px; align-content: center;">Niche</label>
-                {% endif %}
                 <button class="btn btn-outline-success" type="submit">Search</button>
               </form>
             </div>
         </nav>
 
         <div class="Main Section">
+            <h3>Search Results</h3>
+            <p>
+            {% if filter_dic.name %}
+            Search Term: {{ filter_dic.name }} 
+            {% endif %}
+            {% if filter_dic.sort %}
+            Sort: {{ filter_dic.sort }} 
+            {% endif %}
+            {% if filter_dic.category %}
+            Category: {{ filter_dic.category }} 
+            {% endif %}
+            </p>
             {% if type == "Sponsor" %}
-                {% for influencer in results.items %}
-                <br>
+            {% if results.items | length == 0 %}
+            <h5>No Influencers Found</h5>
+            {% endif %}
+            {% for influencer in results.items %}
                 <div class="card">
                     <div class="card-header">
-                        {{ influencer.name }}
+                        <h5>{{ influencer.name }}</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">{{ influencer.email }}</p>
-                        <p class="card-text">{{ influencer.category }}</p>
-                        <p class="card-text">{{ influencer.reach }}</p>
+                        <p class="card-text"><b>Email</b>: {{ influencer.email }}</p>
+                        <p class="card-text"><b>Category</b>: {{ influencer.category }}</p>
+                        <p class="card-text"><b>Reach</b>: {{ influencer.reach }}</p>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestAd{{ influencer.id }}">
                             Request
                         </button>
@@ -198,17 +140,17 @@
                                         <div class="modal-body">
                                             <input type="hidden" name="form_id" value="ad_request">
                                             <input type="hidden" name="id" value="{{ influencer.id }}">
-                                            <select class="form-select" name="campaign_id" id="Campaign" aria-label="Default select example">
+                                            <select class="form-select" name="campaign_id" id="Campaign" aria-label="Default select example" required>
                                                 {% for camp in campaign %}
                                                     <option value="{{ camp.id }}">{{ camp.name }}</option>
                                                 {% endfor %}
                                             </select>
                                             <label class="form-label" for="Campaign">Campaign</label>
-                                            <input type="text" name="message" id="Messages" class="form-control" required/>
+                                            <input type="text" name="message" id="Messages" class="form-control" required maxlength=250/>
                                             <label class="form-label" for="Messages">Messages</label>
-                                            <input type="text" name="requirement" id="Requirements" class="form-control" required/>
+                                            <input type="text" name="requirement" id="Requirements" class="form-control" required maxlength=250/>
                                             <label class="form-label" for="Requirements">Requirements</label>
-                                            <input type="number" name="payment_amount" id="Payment_Amount" class="form-control" required/>
+                                            <input type="number" name="payment_amount" id="Payment_Amount" class="form-control" required min=0 pattern="^\d+$"/>
                                             <label class="form-label" for="Payment_Amount">Payment Amount</label>
                                         </div>
                                         <div class="modal-footer">
@@ -221,39 +163,42 @@
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-            {% elif type == "Influencer" %}
-                {% for campaign in results.items %}
                 <br>
-                <a href="{{ url_for('campaign', id=campaign.id) }}", style="text-decoration:none;">
+            {% endfor %}
+            {% elif type == "Influencer" %}
+            {% if results.items | length == 0 %}
+            <h5>No Campaigns Found</h5>
+            {% endif %}
+            {% for campaign in results.items %}
                     <div class="card">
                         <div class="card-header">
-                            {{ campaign.name }}
+                            <h5>{{ campaign.name }}</h5>
                         </div>
                         <div class="card-body">
-                            <p class="card-text">{{ campaign.description }}</p>
-                            <p class="card-text">{{ campaign.goals }}</p>
-                            <p class="card-text">{{ campaign.niche }}</p>
-                            <p class="card-text">{{ campaign.budget }}</p>
-                            <p class="card-text">{{ campaign.start_date }}</p>
-                            <p class="card-text">{{ campaign.end_date }}</p>
+                            <p class="card-text"><b>Description</b>: {{ campaign.description }}</p>
+                            <p class="card-text"><b>Goals</b>: {{ campaign.goals }}</p>
+                            <p class="card-text"><b>Category</b>: {{ campaign.category }}</p>
+                            <p class="card-text"><b>Budget</b>: {{ campaign.budget }}</p>
+                            <p class="card-text"><b>Remaining Budget</b>: {{ campaign.remaining }}</p>
+                            <p class="card-text">Active from <b>{{ campaign.start_date }}</b> to <b>{{ campaign.end_date }}</b></p>
                             <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: {{ (campaign.budget - campaign.remaining)/campaign.budget }}%;" 
-                                aria-valuenow="{{ (campaign.budget - campaign.remaining)/campaign.budget }}" aria-valuemin="0" aria-valuemax="100">{{ (campaign.budget - campaign.remaining)/campaign.budget }}%</div>
-                            </div>
+                                <div class="progress-bar" role="progressbar" style="width: {{ ((campaign.budget - campaign.remaining)/campaign.budget * 100)|round(2) }}%;" 
+                                aria-valuenow="{{ ((campaign.budget - campaign.remaining)/campaign.budget * 100)|round(2) }}" aria-valuemin="0" aria-valuemax="100">{{ ((campaign.budget - campaign.remaining)/campaign.budget * 100)|round(2) }}%</div>
+                            </div><br>
+                            <a href="/campaign/{{ campaign.id }}" class="btn btn-primary">View Campaign</a>
                         </div>
                     </div>
-                </a>
-                {% endfor %}
+                    <br>
+            {% endfor %}
             {% endif %}
             <!-- Navigation section for pagination controls -->
-            <nav aria-label="Page navigation example">
+            <nav aria-label="Search Page Nav">
                 <ul class="pagination">
                     <!-- Check if there is a previous page -->
                     {% if results.has_prev %}
                     <li class="page-item">
                         <!-- If there is, create a link to the previous page -->
-                        <a class="page-link" href="/search?page={{ results.prev_num }}">Previous</a>
+                        <a class="page-link" href="/search?page={{ results.prev_num }}&name={{ filter_dic.name }}&sort={{ filter_dic.sort }}&category={{ filter_dic.category }}">Previous</a>
                     </li>
                     {% else %}
                     <!-- If not, show a disabled 'Previous' button -->
@@ -267,7 +212,7 @@
                     <!-- Check if the current page is not the active page -->
                     {% if page_num != results.page %}
                     <!-- Create a clickable link for the page number -->
-                    <li class="page-item"><a class="page-link" href="/search?page={{ page_num }}">{{ page_num }}</a></li>
+                    <li class="page-item"><a class="page-link" href="/search?page={{ page_num }}&name={{ filter_dic.name }}&sort={{ filter_dic.sort }}&category={{ filter_dic.category }}">{{ page_num }}</a></li>
                     {% else %}
                     <!-- Highlight the current page as active and not clickable -->
                     <li class="page-item active" aria-current="page">
@@ -284,7 +229,7 @@
                     {% if results.has_next %}
                     <li class="page-item">
                         <!-- If there is, create a link to the next page -->
-                        <a class="page-link" href="/search?page={{ results.next_num }}">Next</a>
+                        <a class="page-link" href="/search?page={{ results.next_num }}&name={{ filter_dic.name }}&sort={{ filter_dic.sort }}&category={{ filter_dic.category }}">Next</a>
                     </li>
                     {% else %}
                     <!-- If not, show a disabled 'Next' button -->

@@ -4,7 +4,8 @@
     <title>Campaign {{ campaign.name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
-<body>
+<body style="margin-top:56px">
+    <!-- Error message display -->
     {% if "success" in error %}
         <div class="alert alert-success" role="alert">
             {{ error }}
@@ -14,9 +15,11 @@
             {{ error }}
         </div>
     {% endif %}
-    {% if type == "Sponsor" %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Welcome {{ name }}</a>
+
+    <!-- Navigation bar -->
+    {% if user.role == "Sponsor" %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">Welcome {{ user.name }}</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -35,9 +38,9 @@
           </ul>
         </div>
     </nav>
-    {% elif type == "influencer" %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Welcome {{ name }}</a>
+    {% elif user.role == "Influencer" %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">Welcome {{ user.name }}</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -56,230 +59,325 @@
           </ul>
         </div>
     </nav>
+    {% elif user.role == "Admin" %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">Welcome Admin</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin') }}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </li>
+          </ul>
+        </div>
+    </nav>
     {% endif %}
+
     <!-- Campaign details -->
     <div class="Campaign">
-        <h1>{{ campaign.name }}</h1>
-        <p>Niche: {{ campaign.niche }}</p>
-        <p>Description: {{ campaign.description }}</p>
-        <p>Goals: {{ campaign.goals }}</p>
-        {% if type == "Sponsor" %}
-        <p>Visibility: {{ campaign.visibility }}</p>
+        <h3>{{ campaign.name }}</h3>
+        {% if ad_requests.items | length == 0 %}
+        <div class="alert alert-warning" role="alert">
+            No Ad Requests sent yet.<br>
+            Campaign will not show up on search results.
+        </div>
         {% endif %}
-        <p>Budget: {{ campaign.budget }}</p>
-        <p>Active from {{ campaign.start_date }} to {{ campaign.end_date }}</p>
-        <p>Remaining Budget: {{ campaign.remaining }}</p>
-        {% if type == "Sponsor" %}
-        <p>Total Ad Requests: {{ ad_requests.total }}</p>
+        <p><b>Category</b>: {{ campaign.category }}</p>
+        <p><b>Description</b>: {{ campaign.description }}</p>
+        <p><b>Goals</b>: {{ campaign.goals }}</p>
+        <p><b>Visibility</b>: {{ campaign.visibility }}</p>
+        <p><b>Budget</b>: {{ campaign.budget }}</p>
+        <p>Active from <b>{{ campaign.start_date }}</b> to <b>{{ campaign.end_date }}</b></p>
+        <p><b>Remaining Budget</b>: {{ campaign.remaining }}</p>
+        {% if user.role == "Sponsor" or user.role == "Admin" %}
+        <p><b>Total Ad Requests</b>: {{ ad_requests.total }}</p>
         {% endif %}
         <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: {{ (campaign.budget - campaign.remaining)/campaign.budget }}%;" 
-            aria-valuenow="{{ (campaign.budget - campaign.remaining)/campaign.budget }}" aria-valuemin="0" aria-valuemax="100">{{ (campaign.budget - campaign.remaining)/campaign.budget }}%</div>
+            <div class="progress-bar" role="progressbar" style="width: {{ ((campaign.budget - campaign.remaining)/campaign.budget * 100)|round(2) }}%;" 
+            aria-valuenow="{{ ((campaign.budget - campaign.remaining)/campaign.budget * 100)|round(2) }}" aria-valuemin="0" aria-valuemax="100">{{ ((campaign.budget - campaign.remaining)/campaign.budget * 100)|round(2) }}%</div>
         </div>
     </div>
 
     <!-- Ad Requests -->
      <div id="ad_requests">
-        <h2>Ad Requests</h2>
-        {% if type == "Sponsor" %}
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdRequest">
+        <h3>Ad Requests
+        {% if user.role == "Sponsor" %}
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAdRequest">
             Add Ad Request
-        </button>
-        <!-- Add Campaign Modal -->
-        <div class="modal fade" id="addAdRequest" tabindex="-1" role="dialog" aria-labelledby="addAsRequestLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <form method="POST" id="add_ad_request">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addAdRequestLabel">Add Ad Request</h5>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="form_id" value="add_ad_request">
-                        <!-- Messages input -->
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <input type="text" name="messages" id="messages" class="form-control" required/>
-                            <label class="form-label" for="messages">Messages</label>
-                        </div>
+            </button>
+            </h3>
+            <!-- Add Ad Request Modal -->
+            <div class="modal fade" id="addAdRequest" tabindex="-1" role="dialog" aria-labelledby="addAdRequestLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <form method="POST" id="add_ad_request">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addAdRequestLabel">Add Ad Request</h5>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="form_id" value="add_ad_request">
+                                <!-- Messages input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="text" name="messages" id="messages" class="form-control" required maxlength=250/>
+                                    <label class="form-label" for="messages">Messages</label>
+                                </div>
 
-                        <!-- Requirements input -->
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <input type="text" id="requirements" name="requirements" class="form-control" required/>
-                            <label class="form-label" for="requirements">Requirements</label>
-                        </div>
+                                <!-- Requirements input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="text" id="requirements" name="requirements" class="form-control" required maxlength=250/>
+                                    <label class="form-label" for="requirements">Requirements</label>
+                                </div>
 
-                        <!-- Payment Amount input -->
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <input type="number" id="payment_amount" name="payment_amount" class="form-control" required/>
-                            <label class="form-label" for="payment_amount">Payment Amount</label>
-                        </div>
+                                <!-- Payment Amount input -->
+                                <div data-mdb-input-init class="form-outline mb-4">
+                                    <input type="number" id="payment_amount" name="payment_amount" class="form-control" required min=0/>
+                                    <label class="form-label" for="payment_amount">Payment Amount</label>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success">Add Ad Request</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Add Ad Request</button>
-                    </div>
-                </form>
+                </div>
             </div>
-            </div>
-        </div>
+        {% else %}
+            </h3>
         {% endif %}
+        
         {% if ad_requests.items | length == 0 %}
-            <p>No Ad Requests added yet.</p>
+            <p>No Ad Requests available yet.</p>
+        {% else %}
+            <br>
         {% endif %}
-        {% if type == "Sponsor" %}
+
         {% for ad_request in ad_requests.items %}
-                <br>
-                <div class="card">
-                    <div class="card-body">
-                    <p class="card-text">Messages: {{ ad_request.messages }}</p>
-                    <p class="card-text">Requirements: {{ ad_request.requirements }}</p>
-                    <p class="card-text">Payment Amount: {{ ad_request.payment_amount }}</p>
-                    {% if ad_request.negotiate and ad_request.status == "Pending" %}
+            <div class="card">
+                <div class="card-body">
+                    <p class="card-text"><b>Messages</b>: {{ ad_request.messages }}</p>
+                    <p class="card-text"><b>Requirements</b>: {{ ad_request.requirements }}</p>
+                    <p class="card-text"><b>Payment Amount</b>: {{ ad_request.payment_amount }}</p>
+                    {% if not ad_request.influencer %}
+                    <p class="card-text"><b>Influencer Not Assigned</b></p>
+                    {% else %}
+                    <p class="card-text">Assigned to <b>{{ ad_request.influencer.name }}</b></p>
+                    {% endif %}
+
+                    {% if ad_request.negotiate and ad_request.status == "Pending" and user.role == "Sponsor" %}
                         <!-- Revert Ad Request Button -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#revertAd{{ ad_request.id }}">
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#revertAd{{ ad_request.id }}">
                             Revert
                         </button>
                         <!-- Revert Ad Request Modal -->
                         <div class="modal fade" id="revertAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="revertAd" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <form method="POST" id="revert_ad">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="revertAd">Revert to Ad Request</h5>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="hidden" name="form_id" value="revert_ad">
-                                        <input type="hidden" name="id" value="{{ ad_request.id }}">
-                                        <label class="form-label">Would you like to Accept or Reject?</label><br>
-                                        <label class="form-label">Ad Request for Campaign {{ ad_request.name }}</label><br>
-                                        <label class="form-label">Messages: {{ ad_request.messages }}</label><br>
-                                        <label class="form-label">Requirements: {{ ad_request.requirements }}</label><br>
-                                        <label class="form-label">Payment Amount: {{ ad_request.payment_amount }}</label><br>
-                                        <label class="form-label">Influencer Assigned: {{ ad_request.influencer_name }}</label><br>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="submit" name="status" value="Accept" class="btn btn-primary">Accept</button>
-                                        <button type="submit" name="status" value="Reject" class="btn btn-primary">Reject</button>
-                                    </div>
-                                </form>
-                            </div>
+                                <div class="modal-content">
+                                    <form method="POST" id="revert_ad">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="revertAd">Revert to Ad Request</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="form_id" value="revert_ad">
+                                            <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                            <label class="form-label">Would you like to Accept or Reject?</label><br>
+                                            <label class="form-label">Campaign <b>{{ ad_request.campaign.name }}</b></label><br>
+                                            <label class="form-label"><b>Messages</b>: {{ ad_request.messages }}</label><br>
+                                            <label class="form-label"><b>Requirements</b>: {{ ad_request.requirements }}</label><br>
+                                            <label class="form-label"><b>Payment Amount</b>: {{ ad_request.payment_amount }}</label><br>
+                                            <label class="form-label"><b>Influencer Assigned</b>: {{ ad_request.influencer.name }}</label><br>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" name="status" value="Accept" class="btn btn-success">Accept</button>
+                                            <button type="submit" name="status" value="Reject" class="btn btn-danger">Reject</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    {% elif not ad_request.negotiate and ad_request.status == "Pending" %}
-                        <p>Status: {{ ad_request.status }}</p>
+                    {% elif not ad_request.negotiate and ad_request.status == "Pending" and user.role == "Sponsor" %}
+                        <p><b>Status</b>: {{ ad_request.status }}</p>
                         <!-- Withdraw Ad Request Button -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#withdrawAd{{ ad_request.id }}">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#withdrawAd{{ ad_request.id }}">
                             Withdraw
                         </button>
                         <!-- Edit Ad Request Button -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editAd{{ ad_request.id }}">
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editAd{{ ad_request.id }}">
                             Edit
                         </button>
                         <!-- Edit Ad Request Modal -->
                         <div class="modal fade" id="editAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="editAd" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <form method="POST" id="edit_ad">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="editAd">Editting Ad Request</h5>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="hidden" name="form_id" value="edit_ad">
-                                        <input type="hidden" name="id" value="{{ ad_request.id }}">
-                                        <label class="form-label">Ad Request for Campaign {{ ad_request.name }}</label>
+                                <div class="modal-content">
+                                    <form method="POST" id="edit_ad">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editAd">Editting Ad Request</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="form_id" value="edit_ad">
+                                            <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                            <label class="form-label">Campaign {{ ad_request.campaign.name }}</label>
 
-                                        <input type="text" name="messages" id="Messages" class="form-control" value="{{ ad_request.messages }}" required/>
-                                        <label class="form-label" for="Messages">Messages</label>
+                                            <input type="text" name="messages" id="Messages" class="form-control" value="{{ ad_request.messages }}" required maxlength=250/>
+                                            <label class="form-label" for="Messages">Messages</label>
 
-                                        <input type="text" name="requirements" id="Requirements" class="form-control" value="{{ ad_request.requirements }}" required/>
-                                        <label class="form-label" for="Requirements">Requirements</label>
+                                            <input type="text" name="requirements" id="Requirements" class="form-control" value="{{ ad_request.requirements }}" required maxlength=250/>
+                                            <label class="form-label" for="Requirements">Requirements</label>
 
-                                        <input type="number" name="payment_amount" id="Payment_Amount" class="form-control" value="{{ ad_request.payment_amount }}" required/>
-                                        <label class="form-label" for="Payment_Amount">Payment Amount</label>
-
-                                        <label class="form-label">Influencer Assigned: {{ ad_request.influencer_name }}</label>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                                    </div>
-                                </form>
-                            </div>
+                                            <input type="number" name="payment_amount" id="Payment_Amount" class="form-control" value="{{ ad_request.payment_amount }}" required min=0/>
+                                            <label class="form-label" for="Payment_Amount">Payment Amount</label><br>
+                                            {% if not ad_request.influencer %}
+                                            <label class="form-label"><b>Influencer Not Assigned</b></label>
+                                            {% else %}
+                                            <label class="form-label">Assigned to <b>{{ ad_request.influencer.name }}</b></label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         <!-- Withdraw Ad Request Modal -->
                         <div class="modal fade" id="withdrawAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="withdrawAd" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <form method="POST" id="withdraw_ad">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="withdrawAd">Withdrawing Ad Request</h5>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="hidden" name="form_id" value="withdraw_ad">
-                                        <input type="hidden" name="id" value="{{ ad_request.id }}">
-                                        <label class="form-label">Are you sure, you want to withdraw?</label><br>
-                                        <label class="form-label">Ad Request for Campaign {{ ad_request.name }}</label><br>
-                                        <label class="form-label">Messages: {{ ad_request.messages }}</label><br>
-                                        <label class="form-label">Requirements: {{ ad_request.requirements }}</label><br>
-                                        <label class="form-label">Payment Amount: {{ ad_request.payment_amount }}</label><br>
-                                        <label class="form-label">Influencer Assigned: {{ ad_request.influencer_name }}</label><br>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="submit" class="btn btn-primary">Withdraw</button>
-                                    </div>
-                                </form>
-                            </div>
+                                <div class="modal-content">
+                                    <form method="POST" id="withdraw_ad">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="withdrawAd">Withdrawing Ad Request</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="form_id" value="withdraw_ad">
+                                            <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                            <label class="form-label">Are you sure, you want to withdraw?</label><br>
+                                            <label class="form-label">Campaign {{ ad_request.campaign.name }}</label><br>
+                                            <label class="form-label"><b>Messages</b>: {{ ad_request.messages }}</label><br>
+                                            <label class="form-label"><b>Requirements</b>: {{ ad_request.requirements }}</label><br>
+                                            <label class="form-label"><b>Payment Amount</b>: {{ ad_request.payment_amount }}</label><br>
+                                            {% if not ad_request.influencer %}
+                                            <label class="form-label"><b>Influencer Not Assigned</b></label>
+                                            {% else %}
+                                            <label class="form-label"><b>Influencer Assigned</b>: {{ ad_request.influencer.name }}</label><br>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-danger">Withdraw</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
+                    {% elif not ad_request.influencer and user.role == "Influencer" %}
+                        <!-- Send Request Button -->
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sendRequest{{ ad_request.id }}">
+                            Request
+                        </button>
+
+                        <!-- Send Request Modal -->
+                        <div class="modal fade" id="sendRequest{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="sendRequestLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <form method="POST" id="send_request">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="sendRequestLabel">Send Request</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="form_id" value="send_request">
+                                            <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                            <label class="form-label">Would you like to send a Request?</label>
+                                            <!-- Payment Amount input -->
+                                            <div data-mdb-input-init class="form-outline mb-4">
+                                                <input type="number" id="payment" name="payment_amount" value="{{ ad_request.payment_amount }}" class="form-control" required min=0/>
+                                                <label class="form-label" for="payment">Payment Amount</label>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success">Send Request</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif not ad_request.negotiate and ad_request.influencer.id == user.id and user.role == "Influencer" %}
+                        <!-- Revert Ad Request Button -->
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#revertAd{{ ad_request.id }}">
+                            Revert
+                        </button>
+                        <!-- Negotiate Ad Request Button -->
+                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#negotiateAd{{ ad_request.id }}">
+                            Negotiate
+                        </button>
+                        <!-- Revert Ad Request Modal -->
+                        <div class="modal fade" id="revertAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="revertAd" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <form method="POST" id="revert_ad">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="revertAd">Revert to Ad Request</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="form_id" value="revert_ad">
+                                            <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                            <label class="form-label">Would you like to Accept or Reject?</label><br>
+                                            <label class="form-label">Campaign <b>{{ ad_request.campaign.name }}</b></label><br>
+                                            <label class="form-label"><b>Messages</b>: {{ ad_request.messages }}</label><br>
+                                            <label class="form-label"><b>Requirements</b>: {{ ad_request.requirements }}</label><br>
+                                            <label class="form-label"><b>Payment Amount</b>: {{ ad_request.payment_amount }}</label><br>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" name="status" value="Accept" class="btn btn-success">Accept</button>
+                                            <button type="submit" name="status" value="Reject" class="btn btn-danger">Reject</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Negotiate Ad Request Modal -->
+                        <div class="modal fade" id="negotiateAd{{ ad_request.id }}" tabindex="-1" role="dialog" aria-labelledby="negotiateAd" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <form method="POST" id="negotiate_ad">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="negotiateAd">Negotiate Ad Request</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="form_id" value="negotiate_ad">
+                                            <input type="hidden" name="id" value="{{ ad_request.id }}">
+                                            <label class="form-label">Campaign <b>{{ ad_request.campaign.name }}</b></label><br>
+                                            <label class="form-label"><b>Messages</b>: {{ ad_request.messages }}</label><br>
+                                            <label class="form-label"><b>Requirements</b>: {{ ad_request.requirements }}</label>
+                                            <input type="number" id="Payment_Amount" name="payment_amount" value="{{ ad_request.payment_amount }}" class="form-control" required>
+                                            <label class="form-label">Payment Amount</label>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" name="status" class="btn btn-success">Send Request</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif ad_request.status == "Pending" %}
+                        <p><b>Status</b>: {{ ad_request.status }}</p>
                     {% else %}
-                        <p>Ad Request {{ ad_request.status }}ed</p>
+                        <p><b>Status</b>: {{ ad_request.status }}ed</b></p>
                     {% endif %}
                 </div>
             </div>
+            <br>
         {% endfor %}
-        {% elif type == "Influencer" %}
-        {% for ad_request in ad_requests.items if not ad_request.influencer_id %}
-                <br>
-                <div class="card">
-                    <div class="card-body">
-                    <p class="card-text">Messages: {{ ad_request.messages }}</p>
-                    <p class="card-text">Requirements: {{ ad_request.requirements }}</p>
-                    <p class="card-text">Payment Amount: {{ ad_request.payment_amount }}</p>
-                    <p class="card-text">Status: {{ ad_request.status }}</p>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sendRequest">
-                        Request
-                    </button>
-                    <!-- Add Campaign Modal -->
-                    <div class="modal fade" id="sendRequest" tabindex="-1" role="dialog" aria-labelledby="sendRequestLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <form method="POST" id="send_request">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="sendRequestLabel">Send Request</h5>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="hidden" name="form_id" value="send_request">
-                                    <input type="hidden" name="id" value="{{ ad_request.id }}">
-                                    <label class="form-label">Would you like to send a request for Ad Request?</label>
-                                    <!-- Payment Amount input -->
-                                    <div data-mdb-input-init class="form-outline mb-4">
-                                        <input type="number" id="payment" name="payment_amount" value="{{ ad_request.payment_amount }}" class="form-control" required/>
-                                        <label class="form-label" for="payment">Payment Amount</label>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Send Request</button>
-                                </div>
-                            </form>
-                        </div>
-                        </div>
-                    </div>
-                </div>
-        {% endfor %}
-        {% endif %}
 
         <!-- Navigation section for pagination controls -->
         <nav aria-label="Ad Request Page navigation">
@@ -288,7 +386,7 @@
                 {% if ad_requests.has_prev %}
                 <li class="page-item">
                     <!-- If there is, create a link to the previous page -->
-                    <a class="page-link" href="/?page={{ ad_requests.prev_num }}">Previous</a>
+                    <a class="page-link" href="/campaign/{{ campaign.id }}?page={{ ad_requests.prev_num }}">Previous</a>
                 </li>
                 {% else %}
                 <!-- If not, show a disabled 'Previous' button -->
@@ -302,7 +400,7 @@
                 <!-- Check if the current page is not the active page -->
                 {% if page_num != ad_requests.page %}
                 <!-- Create a clickable link for the page number -->
-                <li class="page-item"><a class="page-link" href="/?page={{ page_num }}">{{ page_num }}</a></li>
+                <li class="page-item"><a class="page-link" href="/campaign/{{ campaign.id }}?page={{ page_num }}">{{ page_num }}</a></li>
                 {% else %}
                 <!-- Highlight the current page as active and not clickable -->
                 <li class="page-item active" aria-current="page">
@@ -319,7 +417,7 @@
                 {% if ad_requests.has_next %}
                 <li class="page-item">
                     <!-- If there is, create a link to the next page -->
-                    <a class="page-link" href="/?page={{ ad_requests.next_num }}">Next</a>
+                    <a class="page-link" href="/campaign/{{ campaign.id }}?page={{ ad_requests.next_num }}">Next</a>
                 </li>
                 {% else %}
                 <!-- If not, show a disabled 'Next' button -->

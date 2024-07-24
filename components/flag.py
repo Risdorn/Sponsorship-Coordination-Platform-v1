@@ -1,8 +1,18 @@
-from .models import db, Flagged
+from .extensions import db
+from .models import Flagged
+from datetime import date
+
+def validate_flag(type, type_id, reason):
+    # Check if all fields are filled
+    if not type or not type_id or not reason: return False, "All fields are required"
+    # Check if type is valid
+    if type not in ["Sponsor", "Influencer"]: return False, "Invalid type"
+    return True
 
 def create_flag(type, type_id, reason):
     # Create flag
-    flag = Flagged(type=type, type_id=type_id, reason=reason)
+    created = date.today()
+    flag = Flagged(type=type, type_id=type_id, reason=reason, created_on=created)
     db.session.add(flag)
     db.session.commit()
     return flag
