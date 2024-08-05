@@ -2,5 +2,5 @@
 .env
 
 # Pycache files
-_pycache_
-components/_pycache_
+__pycache__
+components/__pycache__
