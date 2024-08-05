@@ -36,6 +36,9 @@
                     <a class="nav-link" href="#Flagged_Users">Flagged Users</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('stats') }}">Stats</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                 </li>
               </ul>
@@ -324,15 +327,15 @@
                         {% elif user.role == "Sponsor" %}
                         <p class="card-text"><b>Industry</b>: {{ user.industry }}</p>
                         {% endif %}
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#unflagUser{{ user.id }}{{ user.role }}">
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#unflagUser{{ user.id }}">
                             Unflag User
                         </button>
-                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}{{ user.role }}">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}">
                             Delete User
                         </button>
                         
                         <!-- Remove Flag User Modal -->
-                        <div class="modal fade" id="unflagUser{{ user.id }}{{ user.role }}" tabindex="-1" role="dialog" aria-labelledby="unflagUser" aria-hidden="true">
+                        <div class="modal fade" id="unflagUser{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="unflagUser" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                     <form method="POST" id="flag">
@@ -354,7 +357,7 @@
                             </div>
                         </div>
                         <!-- Delete User Modal -->
-                        <div class="modal fade" id="deleteUser{{ user.id }}{{ user.role }}" tabindex="-1" role="dialog" aria-labelledby="deleteUser" aria-hidden="true">
+                        <div class="modal fade" id="deleteUser{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUser" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                     <form method="POST" id="delete">

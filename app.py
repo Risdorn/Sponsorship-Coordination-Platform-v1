@@ -5,6 +5,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 
 from components.extensions import db, bcrypt
 from components.models import User
+from components.graphs import *
 
 import os
 import sys
@@ -422,7 +423,7 @@ def campaign(id):
         return redirect(url_for('campaign', id=id, error="Ad request deleted successfully"))
 
 # Search page, Allows users to search for influencers and sponsors
-@app.route('/search/', methods=['GET', 'POST'])
+@app.route('/search', methods=['GET', 'POST'])
 @login_required
 def search():
     user = current_user
@@ -477,6 +478,24 @@ def search():
         if not valid: return redirect(url_for('search', error=message))
         create_ad_request(messages, requirements, payment_amount, 'Pending', False, campaign_id, influencer_id)
         return redirect(url_for('search', error="Ad request sent successfully"))
+
+# Stats page, Allows users to view the statistics of the platform
+@app.route('/stats', methods=['GET'])
+@login_required
+def stats():
+    user = current_user
+    # Get the stats page
+    user_graph = encode_image(user_over_time())
+    campaign_graph = encode_image(campaigns_over_time(user.id))
+    ad_request_graph = encode_image(ad_request_over_time(user.id, user.role.lower()))
+    ad_request_status_graph = encode_image(ad_request_status_distribution(user.id, user.role.lower()))
+    payment_amount_distribution_graph = encode_image(payment_amount_distribution(user.id, user.role.lower()))
+    if user.role == "Sponsor":
+        return render_template('stats.html', user=user, campaign_graph=campaign_graph, ad_request_graph=ad_request_graph, ad_request_status_graph=ad_request_status_graph, payment_amount_distribution_graph=payment_amount_distribution_graph)
+    elif user.role == "Influencer":
+        return render_template('stats.html', user=user, ad_request_graph=ad_request_graph, ad_request_status_graph=ad_request_status_graph, payment_amount_distribution_graph=payment_amount_distribution_graph)
+    return render_template('stats.html', user=user, user_graph=user_graph, campaign_graph=campaign_graph, ad_request_graph=ad_request_graph,
+                           ad_request_status_graph=ad_request_status_graph, payment_amount_distribution_graph=payment_amount_distribution_graph)
 
 @app.route('/logout')
 @login_required
