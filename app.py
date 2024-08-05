@@ -214,12 +214,14 @@ def sponsor_dashboard():
     elif request.method == 'POST' and form_id == 'edit_profile':
         # Update the sponsor profile
         name = request.form.get('name', sponsor.name)
-        password = request.form.get('password', sponsor.password)
+        password = request.form.get('password', None)
+        if password is None: password = "Testing@12"
         industry = request.form.get('industry', sponsor.industry)
         # Check if the form is valid
         valid, message = validate_form(name, sponsor.email, password, password, "Sponsor", industry=industry)
         if not valid: return redirect(url_for('sponsor_dashboard', error=message))
         # If the form is valid, update the user
+        if password == "Testing@12": password = None
         update_user(sponsor.email, {"name": name, "password": password, "industry": industry})
         return redirect(url_for('sponsor_dashboard', error="Profile updated successfully"))
     elif request.method == 'POST' and form_id == 'add_campaign':

@@ -7,7 +7,7 @@ def validate_flag(type, type_id, reason):
     if not type or not type_id or not reason: return False, "All fields are required"
     # Check if type is valid
     if type not in ["Sponsor", "Influencer"]: return False, "Invalid type"
-    return True
+    return True, ""
 
 def create_flag(type, type_id, reason):
     # Create flag
