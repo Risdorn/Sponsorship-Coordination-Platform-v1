@@ -1,4 +1,6 @@
-# Sponsorship Influencer Coordination Platform
+# Sponsorship Influencer Coordination Platform (v1)
+
+> **Grade Letter: A**
 
 This platform allows sponsors and influencers to coordinate campaigns. Sponsors can create ad requests, and influencers can accept or negotiate these requests, facilitating seamless sponsorship deals.
 
